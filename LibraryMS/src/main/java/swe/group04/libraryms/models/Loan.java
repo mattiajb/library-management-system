@@ -6,7 +6,7 @@ import java.util.Objects;
 public class Loan {
 
     // Spazio degli Attributi
-    private final int loanId; // Identificativo univoco del prestito
+    private final String loanId; // Identificativo univoco del prestito
     private User user; // Utente coinvolto
     private Book book; // Libro prestato
 
@@ -15,7 +15,7 @@ public class Loan {
     private LocalDate returnDate; // Data restituzione effettiva (null = non restituito)
 
     // Costruttore
-    public Loan(int loanId, User user, Book book, LocalDate loanDate, LocalDate dueDate) {
+    public Loan(String loanId, User user, Book book, LocalDate loanDate, LocalDate dueDate) {
         this.loanId = loanId;
         this.user = user;
         this.book = book;
@@ -25,7 +25,7 @@ public class Loan {
     }
 
     // Getter
-    public int getLoanId() { return loanId; }
+    public String getLoanId() { return loanId; }
     public User getUser() { return user; }
     public Book getBook() { return book; }
     public LocalDate getLoanDate() { return loanDate; }
