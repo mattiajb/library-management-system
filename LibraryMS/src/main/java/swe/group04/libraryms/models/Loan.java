@@ -1,61 +1,200 @@
+/**
+ * @file Loan.java
+ * @brief Rappresenta un prestito di un libro a un utente.
+ */
 package swe.group04.libraryms.models;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
+/**
+ * @brief Modello di dominio per un prestito.
+ *
+ * Un oggetto Loan descrive il prestito di un libro a un utente
+ * in un certo intervallo di tempo, identificato da un ID univoco.
+ */
 public class Loan {
 
-    // Spazio degli Attributi
-    private final String loanId; // Identificativo univoco del prestito
-    private User user; // Utente coinvolto
-    private Book book; // Libro prestato
+    /// Spazio degli Attributi
+    
+    private final int loanId; ///< Identificativo univoco del prestito
+    private User user; ///< Utente coinvolto
+    private Book book; ///< Libro prestato
 
-    private LocalDate loanDate; // Data del prestito
-    private LocalDate dueDate; // Data di scadenza prevista
-    private LocalDate returnDate; // Data restituzione effettiva (null = non restituito)
+    private LocalDate loanDate; ///< Data del prestito
+    private LocalDate dueDate; ///< Data di scadenza prevista
+    private LocalDate returnDate; ///< Data restituzione effettiva (null = non restituito)
 
-    // Costruttore
-    public Loan(String loanId, User user, Book book, LocalDate loanDate, LocalDate dueDate) {
+    /**
+     * @brief Crea un nuovo prestito attivo.
+     *
+     * Alla creazione il prestito è considerato attivo, quindi
+     * la data di restituzione è impostata a null.
+     *
+     * @pre  user != null
+     * @pre  book != null
+     * @pre  loanDate != null
+     * @pre  dueDate != null
+     *
+     * @post getLoanId() == loanId
+     * @post getUser() == user
+     * @post getBook() == book
+     * @post getLoanDate().equals(loanDate)
+     * @post getDueDate().equals(dueDate)
+     * @post getReturnDate() == null
+     */
+    public Loan(int loanId, User user, Book book, LocalDate loanDate, LocalDate dueDate) {
         this.loanId = loanId;
         this.user = user;
         this.book = book;
         this.loanDate = loanDate;
         this.dueDate = dueDate;
-        this.returnDate = null; // Prestito attivo alla creazione
+        this.returnDate = null; ///< Prestito attivo alla creazione
     }
 
-    // Getter
-    public String getLoanId() { return loanId; }
-    public User getUser() { return user; }
-    public Book getBook() { return book; }
-    public LocalDate getLoanDate() { return loanDate; }
-    public LocalDate getDueDate() { return dueDate; }
-    public LocalDate getReturnDate() { return returnDate; }
-
-    // Setter
-    public void setUser(User user) { this.user = user; }
-    public void setBook(Book book) { this.book = book; }
-    public void setLoanDate(LocalDate loanDate) { this.loanDate = loanDate; }
-    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
-    public void setReturnDate(LocalDate returnDate) { this.returnDate = returnDate; }
-
-    // Metodi utili
+    /**
+     * @brief Restituisce l'ID del prestito.
+     *
+     * @return Identificativo univoco del prestito.
+     */
+    public int getLoanId() { 
+        return loanId; 
+    }
+    
+    /**
+     * @brief Restituisce l'utente coinvolto nel prestito.
+     *
+     * @return Utente associato al prestito.
+     */
+    public User getUser() { 
+        return user; 
+    }
+    
+    /**
+     * @brief Restituisce il libro prestato.
+     *
+     * @return Libro associato al prestito.
+     */
+    public Book getBook() { 
+        return book; 
+    }
+    
+    /**
+     * @brief Restituisce la data di apertura del prestito.
+     *
+     * @return Data del prestito.
+     */
+    public LocalDate getLoanDate() { 
+        return loanDate; 
+    }
+    
+    /**
+     * @brief Restituisce la data di scadenza prevista.
+     *
+     * @return Data di scadenza del prestito.
+     */
+    public LocalDate getDueDate() { 
+        return dueDate; 
+    }
+    
+    /**
+     * @brief Restituisce la data di restituzione effettiva.
+     *
+     * @return Data di restituzione, oppure null se il prestito non è ancora restituito.
+     */
+    public LocalDate getReturnDate() { 
+        return returnDate; 
+    }
+    
+    /**
+     * @brief Imposta l'utente associato al prestito.
+     *
+     * @pre  user != null
+     * @post getUser() == user
+     *
+     * @param user Nuovo utente.
+     */
+    public void setUser(User user) { 
+        this.user = user; 
+    }
+    
+    /**
+     * @brief Imposta il libro associato al prestito.
+     *
+     * @param book Nuovo libro.
+     */
+    public void setBook(Book book) { 
+        this.book = book; 
+    }
+    
+    /**
+     * @brief Imposta la data di apertura del prestito.
+     *
+     * @param loanDate Nuova data del prestito.
+     */
+    public void setLoanDate(LocalDate loanDate) { 
+        this.loanDate = loanDate; 
+    }
+    
+    /**
+     * @brief Imposta la data di scadenza del prestito.
+     *
+     * @param dueDate Nuova data di scadenza.
+     */
+    public void setDueDate(LocalDate dueDate) { 
+        this.dueDate = dueDate; 
+    }
+    
+    /**
+     * @brief Imposta la data di restituzione del prestito.
+     *
+     * @param returnDate Data di restituzione (null se non ancora restituito).
+     */
+    public void setReturnDate(LocalDate returnDate) { 
+        this.returnDate = returnDate; 
+    }
+    
+    /**
+     * @brief Verifica se il prestito è stato restituito.
+     *
+     * @return true se esiste una data di restituzione, false altrimenti.
+     */
     public boolean isReturned() {
         return returnDate != null;
     }
-
+    
+    /**
+     * @brief Verifica se il prestito è ancora attivo.
+     *
+     * @return true se il prestito non è stato restituito, false altrimenti.
+     */
     public boolean isActive() {
         return returnDate == null;
     }
-
-    // equals/hashCode basati su loanId
+    
+    /**
+     * @brief Restituisce il codice hash del prestito.
+     *
+     * Ridefinisce hashCode usando l'identificativo del prestito.
+     *
+     * @return Valore hash dell'oggetto.
+     */
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 31 * hash + Objects.hashCode(this.loanId);
         return hash;
     }
-
+    
+    /**
+     * @brief Confronta questo prestito con un altro oggetto.
+     *
+     * Ridefinisce equals: due prestiti sono considerati uguali
+     * se hanno lo stesso identificativo.
+     *
+     * @param obj Oggetto con cui confrontare.
+     * @return true se rappresenta lo stesso prestito, false altrimenti.
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -64,7 +203,15 @@ public class Loan {
         final Loan other = (Loan) obj;
         return Objects.equals(this.loanId, other.loanId);
     }
-
+    
+    /**
+     * @brief Restituisce una rappresentazione testuale del prestito.
+     *
+     * Ridefinisce toString per mostrare le principali informazioni
+     * su utente, libro e date del prestito.
+     *
+     * @return Stringa descrittiva del prestito.
+     */
     @Override
     public String toString() {
         return "Loan ID: " + loanId + "\n" +

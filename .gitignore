@@ -93,3 +93,9 @@ Desktop.ini
 *.zip
 *.tar.gz
 *.rar
+###########################################
+#           PROJECT-SPECIFIC              #
+###########################################
+
+# Doxygen output (non va versionato)
+LibraryMS/docs/
