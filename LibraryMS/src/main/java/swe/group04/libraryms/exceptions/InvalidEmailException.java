@@ -12,7 +12,7 @@ public class InvalidEmailException extends RuntimeException{
     /**
      * @brief Crea una nuova eccezione con il messaggio specificato.
      *
-     * @param[in] message Messaggio descrittivo dell'errore.
+     * @param message Messaggio descrittivo dell'errore.
      */
     public InvalidEmailException(String message) {
         super(message);

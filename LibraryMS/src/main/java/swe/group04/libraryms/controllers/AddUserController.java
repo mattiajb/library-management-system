@@ -19,7 +19,7 @@ public class AddUserController {
     /**
      * @brief Registra un nuovo utente nel sistema.
      *
-     * @param[in] user Oggetto User da registrare.
+     * @param user Oggetto User da registrare.
      *
      * @pre  user != null
      * @pre  user.getUserId() != null

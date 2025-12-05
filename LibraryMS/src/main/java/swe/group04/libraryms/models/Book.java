@@ -30,21 +30,27 @@ public class Book {
     private int availableCopies;
 
     /**
-     * @brief Crea un nuovo libro con le informazioni specificate.
-     *
-     * Alla creazione le copie disponibili coincidono con le copie totali.
-     *
-     * @pre  title != null
-     * @pre  authors != null
-     * @pre  isbn != null
-     * @pre  totalCopies >= 0
-     *
-     * @post getTitle().equals(title)
-     * @post getAuthors().equals(authors) a parità di contenuto
-     * @post getIsbn().equals(isbn)
-     * @post getTotalCopies() == totalCopies
-     * @post getAvailableCopies() == totalCopies
-     */
+    * @brief Crea un nuovo libro con le informazioni specificate.
+    *
+    * Alla creazione le copie disponibili coincidono con le copie totali.
+    *
+    * @param title        Il titolo del libro (non nullo).
+    * @param authors      La lista degli autori del libro (non nulla).
+    * @param releaseYear  L'anno di pubblicazione del libro.
+    * @param isbn         Il codice ISBN che identifica univocamente il libro (non nullo).
+    * @param totalCopies  Il numero totale di copie inizialmente presenti in catalogo (>= 0).
+    *
+    * @pre  title != null
+    * @pre  authors != null
+    * @pre  isbn != null
+    * @pre  totalCopies >= 0
+    *
+    * @post getTitle().equals(title)
+    * @post getAuthors().equals(authors) a parità di contenuto
+    * @post getIsbn().equals(isbn)
+    * @post getTotalCopies() == totalCopies
+    * @post getAvailableCopies() == totalCopies
+    */
     public Book(String title, List<String> authors, int releaseYear, String isbn, int totalCopies) {
         this.title = title;
         this.authors = new ArrayList<>(authors);

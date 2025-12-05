@@ -31,6 +31,12 @@ public class Loan {
      * Alla creazione il prestito è considerato attivo, quindi
      * la data di restituzione è impostata a null.
      *
+     * @param loanId   Identificatore numerico del prestito.
+     * @param user     Utente che effettua il prestito (non nullo).
+     * @param book     Libro oggetto del prestito (non nullo).
+     * @param loanDate Data in cui il prestito viene registrato (non nulla).
+     * @param dueDate  Data entro cui il libro deve essere restituito (non nulla).
+     *
      * @pre  user != null
      * @pre  book != null
      * @pre  loanDate != null

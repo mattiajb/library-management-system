@@ -19,17 +19,20 @@ public class AddBookController {
     /**
      * @brief Registra un nuovo libro nel sistema.
      *
-     * @param[in] book L'oggetto Book contenente tutti i dati del libro da registrare.
+     * Riceve un oggetto Book già inizializzato, ne controlla la validità
+     * e lo aggiunge al catalogo della biblioteca. In seguito, richiede
+     * il salvataggio dell'archivio aggiornato.
+     *
+     * @param book oggetto Book contenente tutti i dati del libro da registrare.
      *
      * @pre  book != null  
-     *       Il client deve fornire un oggetto Book valido e già inizializzato
-     *       con tutte le informazioni obbligatorie richieste dai requisiti (DF-1).
+     *       Il chiamante deve fornire un'istanza di Book valida e già inizializzata
+     *       con tutte le informazioni obbligatorie (titolo, autori, anno di
+     *       pubblicazione, identificativo, numero di copie, ecc.).
      *
-     * @post Il libro è stato correttamente aggiunto al catalogo (IF-1.1).  
-     *       L'archivio aggiornato viene salvato (IF-5.1).
-     *
-     * @note La validazione dei dati del libro è responsabilità del controller o
-     *       di componenti dedicati alla validazione, a seconda delle decisioni di design.
+     * @post Se la validazione ha esito positivo:
+     *       - il libro risulta inserito nel catalogo della biblioteca;
+     *       - lo stato dell'archivio è stato aggiornato e salvato in modo persistente.
      */
     public void addNewBook(Book book) {
         
