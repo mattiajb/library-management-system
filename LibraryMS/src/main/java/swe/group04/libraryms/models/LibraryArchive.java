@@ -13,6 +13,7 @@
  */
 package swe.group04.libraryms.models;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,7 @@ import java.util.List;
  * @invariant loans != null
  * @invariant nextLoanId > 0
  */
-public class LibraryArchive {
+public class LibraryArchive implements Serializable {
 
     private List<Book> books;
     private List<User> users;

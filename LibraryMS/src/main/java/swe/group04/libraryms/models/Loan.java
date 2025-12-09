@@ -4,6 +4,7 @@
  */
 package swe.group04.libraryms.models;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
 
@@ -13,7 +14,7 @@ import java.util.Objects;
  * Un oggetto Loan descrive il prestito di un libro a un utente
  * in un certo intervallo di tempo, identificato da un ID univoco.
  */
-public class Loan {
+public class Loan implements Serializable {
 
     /// Spazio degli Attributi
     

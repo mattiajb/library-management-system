@@ -29,7 +29,13 @@ public class ArchiveFileService {
     
     private String archiveFilePath;
     private FileService fileService;
-    
+
+    public ArchiveFileService(String archiveFilePath,  FileService fileService)
+    {
+        this.archiveFilePath = archiveFilePath;
+        this.fileService = fileService;
+    }
+
     /**
      * @brief Imposta il percorso del file dell'archivio.
      *
@@ -83,7 +89,12 @@ public class ArchiveFileService {
      *       La logica di caricamento dovrà essere completata in fase di sviluppo.
      */
     public LibraryArchive loadArchive() throws IOException {
-        return null;
+        Object data = fileService.readFromFile(archiveFilePath);
+
+        // Controllo del tipo di dato letto da file
+        if (!(data instanceof LibraryArchive)){ throw new IOException("Il contenuto del file non è valido. "); }
+
+        return (LibraryArchive) data;
     }
     
     /**
@@ -103,7 +114,7 @@ public class ArchiveFileService {
      *       verrà implementata successivamente.
      */
     public void saveArchive(LibraryArchive archive) throws IOException{
-  
+        fileService.writeToFile(archiveFilePath, archive); // Parametri passati: destinazione, archivio
     }
 }
 

@@ -4,6 +4,7 @@
  */
 package swe.group04.libraryms.models;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -18,7 +19,7 @@ import java.util.Objects;
  * @invariant totalCopies >= 0
  * @invariant 0 <= availableCopies && availableCopies <= totalCopies
  */
-public class Book {
+public class Book implements Serializable {
 
     /// Spazio degli Attributi
   

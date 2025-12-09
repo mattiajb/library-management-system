@@ -24,7 +24,25 @@ public class BookService {
     
     private LibraryArchive libraryArchive;
     private LibraryArchiveService libraryArchiveService;
-    
+
+    /**
+     * @brief Crea un nuovo BookService.
+     *
+     * @param libraryArchive        Archivio (non null).
+     * @param libraryArchiveService Servizio per la gestione/persistenza dell'archivio (non null).
+     */
+    public BookService(LibraryArchive libraryArchive, LibraryArchiveService libraryArchiveService) {
+        if (libraryArchive == null) {
+            throw new MandatoryFieldException("libraryArchive non può essere nullo");
+        }
+        if (libraryArchiveService == null) {
+            throw new MandatoryFieldException("libraryArchiveService non può essere nullo");
+        }
+
+        this.libraryArchive = libraryArchive;
+        this.libraryArchiveService = libraryArchiveService;
+    }
+
     /**
      * @brief Registra un nuovo libro nel catalogo.
      *

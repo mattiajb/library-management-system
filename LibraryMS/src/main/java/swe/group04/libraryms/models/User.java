@@ -4,6 +4,7 @@
  */
 package swe.group04.libraryms.models;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -15,7 +16,7 @@ import java.util.Objects;
  * (matricola), con le principali informazioni anagrafiche e la lista
  * dei prestiti attivi.
  */
-public class User {
+public class User implements Serializable {
 
     /// Spazio degli Attributi
     
