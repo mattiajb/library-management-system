@@ -14,6 +14,7 @@ public class Main extends Application{
                 getClass().getResource("/swe/group04/libraryms/view/main.fxml")
         );
         Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle("Library Management System");
         stage.show();

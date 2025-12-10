@@ -1,6 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<AnchorPane>
-</AnchorPane>
+<BorderPane prefHeight="600.0" prefWidth="900.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.MainController">
+
+    <!-- HEADER -->
+    <top>
+        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="header-bar" BorderPane.alignment="CENTER">
+            <children>
+                <Label styleClass="header-title" text="Library Management System">
+                    <HBox.margin>
+                        <Insets bottom="12" left="20" top="12" />
+                    </HBox.margin>
+                </Label>
+            </children>
+        </HBox>
+    </top>
+
+    <!-- CONTENUTO CENTRALE: LOGO + PULSANTI PRINCIPALI -->
+    <center>
+        <VBox alignment="CENTER" spacing="25">
+            <padding>
+                <Insets bottom="40" left="40" right="40" top="40" />
+            </padding>
+            <children>
+
+                <!-- LOGO GRANDE AL CENTRO IN ALTO -->
+                <ImageView fitHeight="180.0" preserveRatio="true" smooth="true">
+                    <VBox.margin>
+                        <Insets bottom="20" />
+                    </VBox.margin>
+                    <image>
+                        <!-- path dal classpath -->
+                        <Image url="@/swe/group04/libraryms/images/logo.png" />
+                    </image>
+                </ImageView>
+
+                <Label styleClass="main-title" text="Benvenuto nel Sistema di Gestione Biblioteca" />
+
+                <Label styleClass="main-subtitle" text="Seleziona una delle sezioni per iniziare" />
+
+                <Separator prefWidth="300" />
+
+                <VBox alignment="CENTER" spacing="15">
+                    <children>
+                        <Button fx:id="bookCatalogBtn" maxWidth="250" mnemonicParsing="false" onAction="#openBookCatalog" styleClass="main-button" text="Catalogo Libri" />
+
+                        <Button fx:id="usersListBtn" maxWidth="250" mnemonicParsing="false" onAction="#openUsersList" styleClass="main-button" text="Lista Utenti" />
+
+                        <Button maxWidth="250" mnemonicParsing="false" styleClass="main-button" text="Lista Prestiti" />
+                    </children>
+                </VBox>
+            </children>
+        </VBox>
+    </center>
+
+    <!-- FOOTER: PULSANTE USCITA / STATUS BAR -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="footer-bar" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="8" left="15" right="15" top="8" />
+            </padding>
+            <children>
+                <Label styleClass="status-label" text="Pronto.">
+                    <HBox.margin>
+                        <Insets right="10" />
+                    </HBox.margin>
+                </Label>
+
+                <Button fx:id="exitBtn" mnemonicParsing="false" styleClass="exit-button" text="Esci" />
+            </children>
+        </HBox>
+    </bottom>
+
+</BorderPane>

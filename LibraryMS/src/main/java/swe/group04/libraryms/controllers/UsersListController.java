@@ -13,8 +13,8 @@ import swe.group04.libraryms.models.User;
  * Il controller media tra l'interfaccia utente e la logica applicativa
  * per tutte le funzionalità riguardanti la gestione degli utenti.
  */
-public class UserController {
-    
+public class UsersListController {
+
     /**
      * @brief Mostra l’elenco degli utenti registrati nel sistema.
      *

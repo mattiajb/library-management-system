@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.UsersListController">
+<BorderPane prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.BookController">
 
     <!-- HEADER SEZIONE -->
     <top>
@@ -20,9 +20,9 @@
                 <Insets bottom="10" left="20" right="20" top="15" />
             </padding>
             <children>
-                <Label styleClass="section-title" text="Lista Utenti" />
+                <Label styleClass="section-title" text="Catalogo Libri" />
 
-                <Label styleClass="main-subtitle" text="Visualizza, cerca e gestisci gli utenti della biblioteca" />
+                <Label styleClass="main-subtitle" text="Visualizza, cerca e gestisci i libri della biblioteca" />
             </children>
         </VBox>
     </top>
@@ -40,24 +40,25 @@
                     <children>
                         <Label styleClass="form-label" text="Ricerca:" />
 
-                        <TextField fx:id="searchBar" promptText="Nome, cognome, matricola..." HBox.hgrow="ALWAYS" />
+                        <TextField fx:id="searchField" promptText="Titolo, autore, ISBN..." HBox.hgrow="ALWAYS" />
 
-                        <ChoiceBox fx:id="filterChoiceBox" prefWidth="160">
-                            <!-- valori impostati dal controller -->
+                        <ChoiceBox fx:id="searchFilterChoiceBox" prefWidth="140">
+                            <!-- I valori reali li imposti dal controller -->
                         </ChoiceBox>
 
                         <Button styleClass="action-button" text="Cerca" />
                     </children>
                 </HBox>
 
-                <!-- TABELLA UTENTI -->
-                <TableView fx:id="catalogTable" VBox.vgrow="ALWAYS">
+                <!-- TABELLA LIBRI -->
+                <TableView fx:id="bookTable" VBox.vgrow="ALWAYS">
                     <columns>
-                        <TableColumn fx:id="nameClm" prefWidth="150" text="Nome" />
-                        <TableColumn fx:id="surnameClm" prefWidth="150" text="Cognome" />
-                        <TableColumn fx:id="idClm" prefWidth="140" text="ID / Matricola" />
-                        <TableColumn fx:id="emailClm" prefWidth="180" text="Email" />
-                        <TableColumn fx:id="activeLoansClm" prefWidth="125.0" text="Prestiti Attivi" />
+                        <TableColumn fx:id="titleClm" prefWidth="191.4090461730957" text="Titolo" />
+                        <TableColumn fx:id="authorClm" prefWidth="179.30935668945312" text="Autore" />
+                        <TableColumn fx:id="yearClm" prefWidth="95.70455932617188" text="Anno" />
+                        <TableColumn fx:id="isbnClm" prefWidth="124.00347900390625" text="ISBN" />
+                        <TableColumn fx:id="availabilityColumn" prefWidth="146.70452880859375" text="Disponibilità" />
+                        <TableColumn fx:id="totalCopiesClm" prefWidth="134.29547119140625" text="Copie Totali" />
                     </columns>
                 </TableView>
 
@@ -76,7 +77,7 @@
 
                 <Button styleClass="secondary-button" text="Dettagli" />
 
-                <Button styleClass="action-button" text="Aggiungi Utente" />
+                <Button styleClass="action-button" text="Aggiungi" />
 
                 <Button styleClass="action-button" text="Modifica" />
 
