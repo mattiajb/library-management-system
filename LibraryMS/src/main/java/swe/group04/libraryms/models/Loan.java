@@ -25,6 +25,7 @@ public class Loan implements Serializable {
     private LocalDate loanDate; ///< Data del prestito
     private LocalDate dueDate; ///< Data di scadenza prevista
     private LocalDate returnDate; ///< Data restituzione effettiva (null = non restituito)
+    private Boolean status; ///< Stato del prestito
 
     /**
      * @brief Crea un nuovo prestito attivo.
@@ -37,6 +38,7 @@ public class Loan implements Serializable {
      * @param book     Libro oggetto del prestito (non nullo).
      * @param loanDate Data in cui il prestito viene registrato (non nulla).
      * @param dueDate  Data entro cui il libro deve essere restituito (non nulla).
+     * @param status   Rappresenta lo stato del prestito: se attivo -> true.
      *
      * @pre  user != null
      * @pre  book != null
@@ -50,13 +52,14 @@ public class Loan implements Serializable {
      * @post getDueDate().equals(dueDate)
      * @post getReturnDate() == null
      */
-    public Loan(int loanId, User user, Book book, LocalDate loanDate, LocalDate dueDate) {
+    public Loan(int loanId, User user, Book book, LocalDate loanDate, LocalDate dueDate, Boolean status) {
         this.loanId = loanId;
         this.user = user;
         this.book = book;
         this.loanDate = loanDate;
         this.dueDate = dueDate;
         this.returnDate = null; ///< Prestito attivo alla creazione
+        this.status = status;
     }
 
     /**
@@ -112,6 +115,15 @@ public class Loan implements Serializable {
     public LocalDate getReturnDate() { 
         return returnDate; 
     }
+
+
+    /**
+     * @brief Restituisce lo stato del prestito
+     * @return true se attivo, false se restituito
+     */
+    public Boolean getStatus() {
+        return status;
+    }
     
     /**
      * @brief Imposta l'utente associato al prestito.
@@ -166,19 +178,20 @@ public class Loan implements Serializable {
      *
      * @return true se esiste una data di restituzione, false altrimenti.
      */
-    public boolean isReturned() {
-        return returnDate != null;
+    public boolean setStatus(Boolean status) {
+        this.status = status;
+        return status;
     }
-    
+
     /**
-     * @brief Verifica se il prestito è ancora attivo.
+     * @brief Restituisce se il prestito è attivo analizzando lo stato.
      *
-     * @return true se il prestito non è stato restituito, false altrimenti.
+     * @return true se attivo, false se non.
      */
-    public boolean isActive() {
-        return returnDate == null;
+    public boolean isActive(){
+        return getStatus();
     }
-    
+
     /**
      * @brief Restituisce il codice hash del prestito.
      *
