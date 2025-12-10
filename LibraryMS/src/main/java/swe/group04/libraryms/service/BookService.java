@@ -9,10 +9,13 @@
  */
 package swe.group04.libraryms.service;
 
+import java.io.IOException;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import swe.group04.libraryms.exceptions.*;
-import swe.group04.libraryms.models.Book;
-import swe.group04.libraryms.models.LibraryArchive;
+import swe.group04.libraryms.models.*;
 
 /**
  * @brief Implementa la logica di alto livello per la gestione del catalogo libri.
@@ -22,8 +25,16 @@ import swe.group04.libraryms.models.LibraryArchive;
  */
 public class BookService {
     
-    private LibraryArchive libraryArchive;
-    private LibraryArchiveService libraryArchiveService;
+    private LibraryArchive libraryArchive; // Archivio in memoria
+    private LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
+
+    // Comparatore Lower-Case
+    private static final Comparator<Book> BY_TITLE_COMPARATOR =
+            Comparator.comparing(
+                    b -> b.getTitle() == null
+                            ? ""
+                            : b.getTitle().toLowerCase()
+            );
 
     /**
      * @brief Crea un nuovo BookService.
@@ -33,10 +44,10 @@ public class BookService {
      */
     public BookService(LibraryArchive libraryArchive, LibraryArchiveService libraryArchiveService) {
         if (libraryArchive == null) {
-            throw new MandatoryFieldException("libraryArchive non può essere nullo");
+            throw new IllegalArgumentException("libraryArchive non può essere nullo");
         }
         if (libraryArchiveService == null) {
-            throw new MandatoryFieldException("libraryArchiveService non può essere nullo");
+            throw new IllegalArgumentException("libraryArchiveService non può essere nullo");
         }
 
         this.libraryArchive = libraryArchive;
@@ -62,7 +73,13 @@ public class BookService {
      * @note Metodo ancora da implementare: il corpo è vuoto.
      */
     public void addBook(Book book) throws MandatoryFieldException, InvalidIsbnException{
-        
+        validateBookMandatoryFields(book);
+        validateIsbnFormat(book.getIsbn());
+        validateIsbnUniquenessOnAdd(book.getIsbn());
+
+        libraryArchive.addBook(book); // Aggiunge il libro all'archivio
+
+        persistChanges(); // Persistenza delle modifiche
     }
     
     /**
@@ -82,7 +99,10 @@ public class BookService {
      * @note Metodo ancora da implementare: il corpo è vuoto.
      */
     public void updateBook(Book book) throws MandatoryFieldException, InvalidIsbnException{
-        
+        validateBookMandatoryFields(book);
+        validateIsbnFormat(book.getIsbn());
+
+        persistChanges(); // Persistenza delle modifiche
     }
     
     /**
@@ -102,21 +122,35 @@ public class BookService {
      * @note Metodo ancora da implementare: il corpo è vuoto.
      */
     public void removeBook(Book book) throws UserHasActiveLoanException{
-        
+        if (book == null) {
+            throw new IllegalArgumentException("Il libro non può essere nullo");
+        }
+
+        List<Loan> loansForBook = libraryArchive.findLoansByBook(book);
+        for (Loan loan : loansForBook) {
+            if(loan != null && loan.isActive()){
+                throw new UserHasActiveLoanException(
+                        "Impossibile rimuovere il libro: sono presenti prestiti attivi associati."
+                );
+            }
+        }
+
+        libraryArchive.removeBook(book); // Rimozione effettiva
+        persistChanges(); // Persistenza delle modifiche
     }
-    
+
     /**
-     * @brief Restituisce la lista dei libri ordinata per titolo.
+     * @brief Restituisce la lista di tutti i libri, ordinata per titolo.
      *
-     * @pre  libraryArchive != null
-     * @post true   // non modifica lo stato dell'archivio
+     * L'ordinamento è case-insensitive e non modifica l'ordinamento
+     * interno dell'archivio (viene restituita una lista di copia).
      *
-     * @return Lista di libri ordinata alfabeticamente per titolo
-     *         (può essere vuota). Attualmente restituisce null finché
-     *         il metodo non viene implementato.
+     * @return Lista di libri ordinata per titolo (mai null).
      */
     public List<Book> getBooksSortedByTitle() {
-        return null;
+        List<Book> books = new ArrayList<>(libraryArchive.getBooks());
+        books.sort(BY_TITLE_COMPARATOR);
+        return books;
     }
     
     /**
@@ -135,6 +169,177 @@ public class BookService {
      *         Attualmente restituisce null finché il metodo non viene implementato.
      */
     public List<Book> searchBooks(String query) {
-        return null;
+        if (query == null) {
+            throw new IllegalArgumentException("La richiesta non può essere nulla.");
+        }
+
+        String normalized = query.trim().toLowerCase(); // Trasforma in lower-case
+
+        // Query vuota: restituisce tutti i libri ordinati
+        if (normalized.isEmpty()) {
+            return getBooksSortedByTitle();
+        }
+
+        List<Book> result = new ArrayList<>(); // Lista che contiene risultato/i
+        for (Book book : libraryArchive.getBooks()) {
+            if (book == null) {
+                continue;
+            }
+
+            boolean matches = false;
+
+            // Titolo
+            String title = book.getTitle();
+            if (title != null && title.toLowerCase().contains(normalized)) {
+                matches = true;
+            }
+
+            // Autori
+            if (!matches && book.getAuthors() != null) {
+                for (String author : book.getAuthors()) {
+                    if (author != null && author.toLowerCase().contains(normalized)) {
+                        matches = true;
+                        break;
+                    }
+                }
+            }
+
+            // ISBN
+            if (!matches) {
+                String isbn = book.getIsbn();
+                if (isbn != null && isbn.toLowerCase().contains(normalized)) {
+                    matches = true;
+                }
+            }
+
+            if (matches) {
+                result.add(book);
+            }
+        }
+
+        result.sort(BY_TITLE_COMPARATOR);
+        return result;
+    }
+
+    /* --------------------------------------------------------------------- */
+    /*                      Metodi di utilità interni                        */
+    /* --------------------------------------------------------------------- */
+
+    /**
+     * @brief Verifica che i campi obbligatori di un libro siano valorizzati.
+     *
+     * Controlla:
+     * - titolo non nullo/ne vuoto,
+     * - almeno un autore,
+     * - anno di pubblicazione positivo,
+     * - ISBN non nullo/ne vuoto,
+     * - numero totale di copie > 0,
+     * - copie disponibili tra 0 e totale.
+     *
+     * @param book Libro da validare.
+     *
+     * @throws MandatoryFieldException se qualche vincolo non è rispettato.
+     */
+    private void validateBookMandatoryFields(Book book) throws MandatoryFieldException {
+        if (book == null) {
+            throw new MandatoryFieldException("Il libro non può essere nullo.");
+        }
+
+        // Titolo
+        if (isNullOrBlank(book.getTitle())) {
+            throw new MandatoryFieldException("Il titolo è obbligatorio.");
+        }
+
+        // Autori
+        if (book.getAuthors() == null || book.getAuthors().isEmpty()) {
+            throw new MandatoryFieldException("È necessario specificare almeno un autore.");
+        }
+
+        // Anno di pubblicazione (controllo di base: > 0)
+        if (book.getReleaseYear() <= 0 || book.getReleaseYear() > Year.now().getValue()) {
+            throw new MandatoryFieldException("L'anno di pubblicazione non è valido.");
+        }
+
+        // ISBN
+        if (isNullOrBlank(book.getIsbn())) {
+            throw new MandatoryFieldException("L'ISBN è obbligatorio.");
+        }
+
+        // Copie totali
+        if (book.getTotalCopies() <= 0) {
+            throw new MandatoryFieldException(
+                    "Il numero totale di copie deve essere maggiore di zero."
+            );
+        }
+
+        // Copie disponibili
+        if (book.getAvailableCopies() < 0 ||
+                book.getAvailableCopies() > book.getTotalCopies()) {
+            throw new MandatoryFieldException(
+                    "Le copie disponibili devono essere comprese tra 0 e il numero totale di copie."
+            );
+        }
+    }
+
+    /**
+     * @brief Valida il formato di base dell'ISBN.
+     *
+     * Implementazione semplice: accetta ISBN con cifre, spazi e trattini,
+     * e controlla che il numero di cifre (esclusi spazi e trattini) sia
+     * tipicamente 10 o 13.
+     *
+     * @param isbn ISBN da validare (non null/ne vuoto).
+     *
+     * @throws InvalidIsbnException se il formato non è ritenuto valido.
+     */
+    private void validateIsbnFormat(String isbn) throws InvalidIsbnException {
+        String normalized = isbn.replace("-", "").replace(" ", "");
+        if (!normalized.chars().allMatch(Character::isDigit)) {
+            throw new InvalidIsbnException("L'ISBN deve contenere solo cifre (eventuali trattini/spazi sono ammessi).");
+        }
+
+        int length = normalized.length();
+        if (length != 10 && length != 13) {
+            throw new InvalidIsbnException("L'ISBN deve contenere 10 o 13 cifre.");
+        }
+    }
+
+    /**
+     * @brief Verifica l'unicità dell'ISBN durante l'inserimento di un nuovo libro.
+     *
+     * @param isbn ISBN da verificare.
+     *
+     * @throws InvalidIsbnException se esiste già un libro con lo stesso ISBN.
+     */
+    private void validateIsbnUniquenessOnAdd(String isbn) throws InvalidIsbnException {
+        Book existing = libraryArchive.findBookByIsbn(isbn);
+        if (existing != null) {
+            throw new InvalidIsbnException("Esiste già un libro in catalogo con lo stesso ISBN.");
+        }
+    }
+
+    /**
+     * @brief Effettua il salvataggio dell'archivio tramite LibraryArchiveService.
+     *
+     * Eventuali IOException vengono convertite in RuntimeException, in quanto
+     * rappresentano un errore applicativo grave che non rientra nei normali
+     * casi d'uso gestiti dall'operatore.
+     */
+    private void persistChanges() {
+        try {
+            libraryArchiveService.saveArchive(libraryArchive);
+        } catch (IOException e) {
+            throw new RuntimeException("Errore durante il salvataggio dell'archivio dei libri.", e);
+        }
+    }
+
+    /**
+     * @brief Ritorna true se la stringa è null o composta solo da spazi.
+     *
+     * @param value Stringa da controllare.
+     * @return true se null o blank, false altrimenti.
+     */
+    private boolean isNullOrBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

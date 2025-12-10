@@ -13,7 +13,14 @@
  */
 package swe.group04.libraryms.models;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,9 +41,13 @@ import java.util.List;
  */
 public class LibraryArchive implements Serializable {
 
-    private List<Book> books;
-    private List<User> users;
-    private List<Loan> loans;
+    /**
+     * Collezioni osservabili.
+     * Marcate come transient per gestire manualmente la serializzazione.
+     */
+    private transient ObservableList<Book> books;
+    private transient ObservableList<User> users;
+    private transient ObservableList<Loan> loans;
 
     private int nextLoanId = 1;
 
@@ -48,9 +59,9 @@ public class LibraryArchive implements Serializable {
      * @post getLoans().isEmpty()
      */
     public LibraryArchive() {
-        this.books = new ArrayList<>();
-        this.users = new ArrayList<>();
-        this.loans = new ArrayList<>();
+        this.books = FXCollections.observableArrayList();
+        this.users = FXCollections.observableArrayList();
+        this.loans = FXCollections.observableArrayList();
     }
     
     /**
@@ -179,10 +190,12 @@ public class LibraryArchive implements Serializable {
      * @pre  loan != null
      * @post loans.contains(loan)
      *
-     * @param loan [in] Prestito da aggiungere.
      */
-    public void addLoan(Loan loan) {
+    public Loan addLoan(User user, Book book, LocalDate dueDate) {
+        int id = generateLoanId(); ///< Generazione ID Univoco
+        Loan loan = new Loan(id, user, book, LocalDate.now(), dueDate, true); ///< Istanzia nuovo prestito
         loans.add(loan);
+        return loan;
     }
 
     /**
@@ -267,10 +280,61 @@ public class LibraryArchive implements Serializable {
     public List<Loan> getReturnedLoans() {
         List<Loan> result = new ArrayList<>();
         for (Loan l : loans) {
-            if (l.isReturned()) {
+            if (!l.isActive()) {
                 result.add(l);
             }
         }
         return result;
     }
+
+    /**
+     * @brief Serializzazione personalizzata dell'oggetto LibraryArchive.
+     *
+     * Poiché le liste interne sono ObservableList (non serializzabili),
+     * le serializziamo come semplici ArrayList e le ricostruiamo alla lettura.
+     *
+     * @param out stream di output usato per la serializzazione.
+     * @throws IOException in caso di errori di I/O.
+     */
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        /// Serializzazione standard degli oggetti default (nextLoanID)
+        out.defaultWriteObject();
+
+        /// Serializzazione del contenuto delle liste come ArrayList "semplici"
+        out.writeObject(new ArrayList<>(books));
+        out.writeObject(new ArrayList<>(users));
+        out.writeObject(new ArrayList<>(loans));
+    }
+
+    /**
+     * @brief Deserializzazione personalizzata dell'oggetto LibraryArchive.
+     *
+     * Ricostruisce le ObservableList a partire dalle liste serializzate.
+     *
+     * @param in stream di input usato per la deserializzazione.
+     * @throws IOException in caso di errori di I/O.
+     * @throws ClassNotFoundException se le classi degli oggetti contenuti
+     *                                non sono trovate.
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        /// Deserializza i campi non transient (es. nextLoanId)
+        in.defaultReadObject();
+
+        /// Legge le liste "semplici" dal file
+        List<Book> serializedBooks = (List<Book>) in.readObject();
+        List<User> serializedUsers = (List<User>) in.readObject();
+        List<Loan> serializedLoans = (List<Loan>) in.readObject();
+
+        /// Ricostruisce le ObservableList, gestendo eventuali null
+        this.books = FXCollections.observableArrayList(
+                serializedBooks != null ? serializedBooks : new ArrayList<>()
+        );
+        this.users = FXCollections.observableArrayList(
+                serializedUsers != null ? serializedUsers : new ArrayList<>()
+        );
+        this.loans = FXCollections.observableArrayList(
+                serializedLoans != null ? serializedLoans : new ArrayList<>()
+        );
+    }
 }
+

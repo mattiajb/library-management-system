@@ -170,6 +170,50 @@ public class Book implements Serializable {
     }
 
     /**
+     * @brief Decrementa di una unità il numero di copie disponibili del libro.
+     *
+     * il numero di copie disponibili deve essere sempre compreso
+     * tra 0 e il numero di copie totali.
+     *
+     * @pre  availableCopies > 0
+     * @post availableCopies == availableCopies@pre - 1
+     *
+     * @throws IllegalStateException se non ci sono copie disponibili
+     *                               (availableCopies <= 0).
+     */
+    public void decrementAvailableCopies() {
+        if (this.availableCopies <= 0) {
+            throw new IllegalStateException(
+                    "Impossibile decrementare le copie disponibili: il valore è già 0."
+            );
+        }
+
+        this.availableCopies--;
+    }
+
+    /**
+     * @brief Incrementa di una unità il numero di copie disponibili del libro.
+     *
+     * il numero di copie disponibili deve essere sempre compreso
+     * tra 0 e il numero totale di copie dichiarate per il libro.
+     *
+     * @pre  availableCopies < totalCopies
+     * @post availableCopies == availableCopies@pre + 1
+     *
+     * @throws IllegalStateException se si tenta di superare il numero totale
+     *                               di copie disponibili.
+     */
+    public void incrementAvailableCopies() {
+        if (this.availableCopies >= this.totalCopies) {
+            throw new IllegalStateException(
+                    "Impossibile incrementare le copie disponibili: ha già raggiunto il numero totale di copie."
+            );
+        }
+
+        this.availableCopies++;
+    }
+
+    /**
      * @brief Restituisce il codice hash del libro.
      *
      * Ridefinisce hashCode usando solo l'ISBN come chiave,

@@ -9,7 +9,10 @@
  */
 package swe.group04.libraryms.service;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import swe.group04.libraryms.exceptions.*;
 import swe.group04.libraryms.models.Book;
@@ -25,53 +28,154 @@ import swe.group04.libraryms.models.User;
  */
 public class LoanService {
     
-    private LibraryArchive libraryArchive;
-    private LibraryArchiveService libraryArchiveService;
-    
+    private LibraryArchive libraryArchive; // Archivio in memoria
+    private LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
+
+    // Comparatore per data di restituzione prevista
+    private static final Comparator<Loan> BY_DUEDATE_COMPARATOR =
+            Comparator.comparing(Loan::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()));
+
+
     /**
-     * @brief Registra un nuovo prestito per un dato utente e un dato libro.
-     *
-     * Esegue i controlli sulle copie disponibili e sul numero massimo
-     * di prestiti consentiti all'utente.
-     *
-     * @pre  user != null
-     * @pre  book != null
-     * @pre  dueDate != null
-     * @pre  libraryArchive != null
-     *
-     * @param user    Utente che effettua il prestito.
-     * @param book    Libro da prestare.
-     * @param dueDate Data di scadenza prevista per la restituzione.
-     *
-     * @return Il prestito appena creato, oppure null finché il metodo
-     *         non viene effettivamente implementato.
-     *
-     * @throws NoAvailableCopiesException Se non ci sono copie disponibili del libro.
-     * @throws MaxLoansReachedException   Se l'utente ha già raggiunto il numero massimo di prestiti.
-     * @throws MandatoryFieldException    Se uno dei parametri obbligatori non è valido.
-     *
-     * @note Metodo attualmente non implementato: restituisce null.
+     * @brief Costruttore
      */
-    public Loan registerLoan(User user, Book book, LocalDate dueDate) throws NoAvailableCopiesException, MaxLoansReachedException, MandatoryFieldException{
-        return null;
+    public LoanService(LibraryArchive libraryArchive,
+                       LibraryArchiveService libraryArchiveService) {
+
+        if (libraryArchive == null) {
+            throw new IllegalArgumentException("libraryArchive non può essere nullo");
+        }
+        if (libraryArchiveService == null) {
+            throw new IllegalArgumentException("libraryArchiveService non può essere nullo");
+        }
+
+        this.libraryArchive = libraryArchive;
+        this.libraryArchiveService = libraryArchiveService;
     }
-    
+
+    /* ================================================================
+                             REGISTRAZIONE PRESTITO
+     ================================================================= */
+
     /**
-     * @brief Registra la restituzione di un prestito.
+     * @brief Registra un nuovo prestito.
      *
-     * Aggiorna lo stato del prestito e l'eventuale disponibilità del libro.
+     * Vincoli applicati:
+     *  - user != null, book != null, dueDate != null,
+     *  - il libro deve avere copie disponibili,
+     *  - l'utente deve avere meno di 3 prestiti attivi,
+     *  - la data di scadenza non può essere precedente alla data corrente.
      *
-     * @pre  loan != null
-     * @pre  libraryArchive != null
-     *
-     * @param loan Prestito da considerare restituito.
-     *
-     * @note Metodo attualmente non implementato: il corpo è vuoto.
+     * @return Il prestito creato.
      */
-    public void registerReturn(Loan loan) {
-        
+    public Loan registerLoan(User user, Book book, LocalDate dueDate)
+            throws MandatoryFieldException,
+            NoAvailableCopiesException,
+            MaxLoansReachedException {
+
+        /* --- Controlli di base (campi obbligatori) --- */
+
+        if (user == null) {
+            throw new MandatoryFieldException("Utente non valido.");
+        }
+        if (book == null) {
+            throw new MandatoryFieldException("Libro non valido.");
+        }
+        if (dueDate == null) {
+            throw new MandatoryFieldException("La data di restituzione prevista è obbligatoria.");
+        }
+
+        /* --- Verifica disponibilità copie --- */
+
+        if (!book.hasAvailableCopies()) {
+            throw new NoAvailableCopiesException("Non ci sono copie disponibili per questo libro.");
+        }
+
+        /* --- Verifica limite massimo prestiti attivi per utente --- */
+
+        int activeLoans = 0;
+        List<Loan> loansByUser = libraryArchive.findLoansByUser(user);
+        for(Loan loan : loansByUser) {
+            if(loan.isActive()) {
+                activeLoans++;
+            }
+        }
+        if (activeLoans >= 3) {
+            throw new MaxLoansReachedException("L'utente ha già raggiunto il limite di 3 prestiti attivi.");
+        }
+
+        /* --- Verifica correttezza data di scadenza --- */
+
+        if (dueDate.isBefore(LocalDate.now())) {
+            throw new MandatoryFieldException(
+                    "La data di restituzione non può essere precedente alla data odierna.");
+        }
+
+        /* --- Creazione effettiva del prestito --- */
+
+        Loan loan = libraryArchive.addLoan(user, book, dueDate);
+
+        /* --- Aggiornamento copie disponibili del libro --- */
+
+        book.decrementAvailableCopies();
+
+        /* --- Persistenza --- */
+
+        persistChanges();
+
+        return loan;
     }
-    
+
+
+    /* ================================================================
+                                RESTITUZIONE PRESTITO
+       ================================================================ */
+
+    /**
+     * @brief Registra la restituzione del libro per un prestito.
+     *
+     * Effetti:
+     *  - imposta la returnDate del prestito,
+     *  - incrementa le copie disponibili del libro,
+     *  - salva l'archivio aggiornato.
+     *
+     * Vincoli:
+     *  - il prestito deve essere attivo,
+     *  - non deve essere già restituito.
+     */
+    public void returnLoan(Loan loan) {
+        if (loan == null) {
+            throw new MandatoryFieldException("Il prestito non può essere nullo.");
+        }
+
+        if (!loan.isActive()) {
+            throw new MandatoryFieldException("Il prestito risulta già chiuso.");
+        }
+
+        /* --- Aggiorna data restituzione --- */
+
+        loan.setReturnDate(LocalDate.now());
+
+        /* --- Aggiorna stato --- */
+
+        loan.setStatus(false);
+
+        /* --- Incrementa copie del libro --- */
+
+        Book book = loan.getBook();
+        if (book != null) {
+            book.incrementAvailableCopies();
+        }
+
+        /* --- Persistenza --- */
+
+        persistChanges();
+    }
+
+    /* ================================================================
+                           PRESTITI ATTIVI E STATI
+       ================================================================ */
+
     /**
      * @brief Restituisce tutti i prestiti attivi.
      *
@@ -81,67 +185,56 @@ public class LoanService {
      *         oppure null finché il metodo non viene implementato.
      */
     public List<Loan> getActiveLoan() {
-        return null;
+
+        List<Loan> result = new ArrayList<>();
+
+        for (Loan loan : libraryArchive.getLoans()) {
+            if (loan != null && loan.isActive()) {
+                result.add(loan);
+            }
+        }
+
+        result.sort(BY_DUEDATE_COMPARATOR);
+        return result;
     }
-    
+
     /**
-     * @brief Restituisce i prestiti attivi, ordinati secondo una logica definita.
+     * @brief Indica se un prestito è in ritardo.
      *
-     * Ad esempio, potranno essere ordinati per data di scadenza,
-     * per utente o secondo altri criteri di business.
-     *
-     * @pre  libraryArchive != null
-     *
-     * @return Lista dei prestiti attivi ordinata (può essere vuota),
-     *         oppure null finché il metodo non viene implementato.
+     * Un prestito è in ritardo se:
+     *  - è ancora attivo,
+     *  - la data dovuta è precedente a oggi.
      */
-    public List<Loan> sortActiveLoan() {
-        return null;
+    public boolean isLate(Loan loan) {
+
+        if (loan == null || !loan.isActive() || loan.getDueDate() == null) {
+            return false;
+        }
+
+        return loan.getDueDate().isBefore(LocalDate.now());
     }
-    
+
     /**
-     * @brief Restituisce i prestiti attivi associati a un determinato utente.
-     *
-     * @pre  user != null
-     * @pre  libraryArchive != null
-     *
-     * @param user Utente di cui cercare i prestiti attivi.
-     *
-     * @return Lista dei prestiti attivi dell'utente (può essere vuota),
-     *         oppure null finché il metodo non viene implementato.
+     * @brief Restituisce tutti i prestiti ordinati per data di scadenza.
      */
-    public List<Loan> getActiveLoansByUser(User user){
-        return null;
+    public List<Loan> getLoansSortedByDueDate() {
+        List<Loan> list = new ArrayList<>(libraryArchive.getLoans());
+        list.sort(BY_DUEDATE_COMPARATOR);
+        return list;
     }
-    
+
+    /* ================================================================
+                             METODI INTERNI
+       ================================================================ */
+
     /**
-     * @brief Restituisce i prestiti attivi relativi a un determinato libro.
-     *
-     * @pre  book != null
-     * @pre  libraryArchive != null
-     *
-     * @param book Libro di cui cercare i prestiti attivi.
-     *
-     * @return Lista dei prestiti attivi per quel libro (può essere vuota),
-     *         oppure null finché il metodo non viene implementato.
+     * Salva l'archivio aggiornato tramite LibraryArchiveService.
      */
-    public List<Loan> getActiveLoanByBook(Book book) {
-        return null;
-    }
-    
-    /**
-     * @brief Verifica se un prestito è in ritardo.
-     *
-     * Tipicamente confronta la data di scadenza con la data attuale
-     * e considera solo i prestiti ancora attivi.
-     *
-     * @pre  loan != null
-     *
-     * @param loan Prestito da verificare.
-     *
-     * @return true se il prestito risulta in ritardo, false altrimenti.
-     */
-    public boolean isLate(Loan loan){
-        return false;
+    private void persistChanges() {
+        try {
+            libraryArchiveService.saveArchive(libraryArchive);
+        } catch (IOException e) {
+            throw new RuntimeException("Errore durante il salvataggio dei prestiti.", e);
+        }
     }
 }

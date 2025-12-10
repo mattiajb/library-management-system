@@ -9,6 +9,7 @@
  */
 package swe.group04.libraryms.service;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import swe.group04.libraryms.models.Book;
@@ -27,70 +28,129 @@ import swe.group04.libraryms.persistence.FileService;
 public class LibraryArchiveService {
     
     private LibraryArchive libraryArchive; /// Archivio effettivo
-    private ArchiveFileService archiveFileService; // Collegamento a FileService
-    
+    private ArchiveFileService archiveFileService; // Gestione I/O
+
+    /**
+     * @brief Crea un nuovo LibraryArchiveService.
+     *
+     * @param archiveFileService Servizio di persistenza da utilizzare (non null).
+     *
+     * @throws IllegalArgumentException se archiveFileService è null.
+     */
+    public LibraryArchiveService(ArchiveFileService archiveFileService) {
+        if (archiveFileService == null) {
+            throw new IllegalArgumentException("archiveFileService non può essere nullo");
+        }
+        this.archiveFileService = archiveFileService;
+    }
+
+    /**
+     * @brief Garantisce che libraryArchive sia inizializzato.
+     *
+     * Se è null, crea un nuovo archivio vuoto.
+     */
+    private void ensureArchiveInitialized() {
+        if (this.libraryArchive == null) {
+            this.libraryArchive = new LibraryArchive();
+        }
+    }
+
+    /**
+     * @brief Restituisce l'archivio attualmente gestito dal servizio.
+     *
+     * Se nessun archivio è stato ancora caricato o creato, viene creato
+     * un nuovo archivio vuoto.
+     *
+     * @return Istanza di LibraryArchive mai null.
+     */
+    public LibraryArchive getLibraryArchive() {
+        ensureArchiveInitialized();
+        return libraryArchive;
+    }
+
     /**
      * @brief Carica l'archivio da file e lo imposta come archivio corrente.
      *
-     * @pre  fileService != null
-     * @pre  archivePath != null
+     * @pre  L'archivio è stato configurato validamente
      *
-     * @post archive == result  (se il caricamento ha successo)
+     * @post Se il file esiste, libraryArchive == archivio caricato da file
      *
-     * @return L'archivio caricato, oppure null finché il metodo
-     *         non viene effettivamente implementato.
+     * @return L'archivio caricato
      *
-     * @note Metodo attualmente non implementato: restituisce null.
      */
     public LibraryArchive loadArchive() throws IOException {
-        //archiveFileService.loadArchive();
-        //return libraryArchive;
+        try {
+            LibraryArchive loaded = archiveFileService.loadArchive();
+
+            // Se viene restituito null, creazione archivio vuoto
+            if (loaded == null) {
+                this.libraryArchive = new LibraryArchive();
+            } else {
+                this.libraryArchive = loaded;
+            }
+        } catch (IOException e) {
+            if (e instanceof FileNotFoundException) {
+                this.libraryArchive = new LibraryArchive();
+            } else {
+                throw e;
+            }
+        }
+
+        return this.libraryArchive;
     }
-    
+
     /**
      * @brief Salva l'archivio corrente su file.
      *
      * @pre  archive != null
-     * @pre  fileService != null
-     * @pre  archivePath != null
+     * @pre  L'ArchiveFileService è correttamente configurato.
      *
-     * @post true   // l'effetto è esterno: scrittura su file
+     * @post L'archivio viene serializzato sul file configurato.
      *
      * @param archive Archivio da salvare su file.
      *
-     * @note Metodo attualmente non implementato: il corpo è vuoto.
+     * @throws IOException Se si verifica un errore durante la scrittura.
      */
-    public void saveArchive(LibraryArchive archive) {
-        
+    public void saveArchive(LibraryArchive archive) throws IOException {
+        if (archive == null) {
+            throw new IllegalArgumentException("archive non può essere nullo");
+        }
+
+        // Aggiorniamo il riferimento interno per mantenere coerenza
+        this.libraryArchive = archive;
+
+        // Deleghiamo ad ArchiveFileService la scrittura effettiva su disco
+        archiveFileService.saveArchive(archive);
     }
     
     /**
      * @brief Restituisce la lista completa dei libri presenti in archivio.
      *
-     * @return Lista di tutti i libri registrati (può essere vuota),
-     *         oppure null finché il metodo non viene implementato.
+     * @return Lista di tutti i libri registrati (può essere vuota)
      */
     public List<Book> getAllBooks() {
-        return null;
+        ensureArchiveInitialized();
+        return libraryArchive.getBooks();
     }
     
     /**
      * @brief Restituisce la lista completa degli utenti registrati.
      *
-     * @return Lista di tutti gli utenti registrati (può essere vuota),
-     *         oppure null finché il metodo non viene implementato.
+     * @return Lista di tutti gli utenti registrati (può essere vuota).
+     *
      */
     public List<User> getAllUsers() {
-        return null;
+        ensureArchiveInitialized();
+        return libraryArchive.getUsers();
     }
     
     /**
      * @brief Restituisce la lista completa dei prestiti registrati.
      *
-     * @return Lista di tutti i prestiti (può essere vuota),
-     *         oppure null finché il metodo non viene implementato.
+     * @return Lista di tutti i prestiti (può essere vuota).
      */
     public List<Loan> getAllLoans() {
-        return null;
+        ensureArchiveInitialized();
+        return libraryArchive.getLoans();
     }
 }
