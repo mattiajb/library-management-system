@@ -90,7 +90,7 @@
             <children>
 
                 <!-- Visualizza dettagli utente selezionato -->
-                <Button fx:id="userDetailsButton" styleClass="secondary-button" text="Visualizza dettagli" />
+                <Button fx:id="userDetailsButton" onAction="#showUserDetails" styleClass="secondary-button" text="Visualizza dettagli" />
 
                 <!-- Aggiungi nuovo utente -->
                 <Button fx:id="addUserButton" onAction="#addUser" styleClass="action-button" text="Aggiungi utente" />

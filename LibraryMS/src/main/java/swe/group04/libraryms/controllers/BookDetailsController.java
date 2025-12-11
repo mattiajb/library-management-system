@@ -5,6 +5,10 @@
 
 package swe.group04.libraryms.controllers;
 
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import swe.group04.libraryms.models.Book;
 
 /**
@@ -15,18 +19,27 @@ import swe.group04.libraryms.models.Book;
  * presentazione all'utente tramite l'interfaccia grafica.
  */
 public class BookDetailsController {
-    
-    /**
-     * @brief Mostra i dettagli del libro selezionato.
-     *
-     * @param book Libro di cui visualizzare le informazioni.
-     *
-     * @pre  book != null
-     * @pre  book.getIsbn() != null
-     *
-     * @post I dettagli del libro risultano visualizzati all'utente.
-     */
-    public void showDetails(Book book){
-        
+
+    @FXML
+    private Button saveButton;
+    @FXML
+    private Button deleteButton;
+    @FXML
+    private Button cancelButton;
+    @FXML
+    private TextField titleField;
+    @FXML
+    private TextField authorField;
+    @FXML
+    private TextField yearField;
+    @FXML
+    private TextField isbnField;
+    @FXML
+    private TextField totalCopiesField;
+    @FXML
+    private TextField availableCopiesField;
+
+    @FXML
+    private void cancelOperation(ActionEvent event) {
     }
 }

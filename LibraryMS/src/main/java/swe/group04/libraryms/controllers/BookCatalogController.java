@@ -67,7 +67,6 @@ public class BookCatalogController {
      *
      * Viene chiamato automaticamente da JavaFX dopo il caricamento del FXML.
      */
-    @FXML
     public void initialize() {
 
         // Titolo
@@ -222,8 +221,7 @@ public class BookCatalogController {
     @FXML
     private void addBook(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/swe/group04/libraryms/view/AddBook.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/swe/group04/libraryms/view/AddBook.fxml"));
             Parent root = loader.load();
 
             // Recupero il controller della finestra "AddBook"
@@ -232,8 +230,7 @@ public class BookCatalogController {
             controller.setOnBookAddedCallback(this::refreshTable);
 
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                    getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
 
             Stage addBookStage = new Stage();
             addBookStage.setTitle("Aggiungi libro");
@@ -257,5 +254,9 @@ public class BookCatalogController {
         alert.setTitle("Errore");
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void showBookDetails(ActionEvent event) {
     }
 }

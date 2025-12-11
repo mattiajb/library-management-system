@@ -11,6 +11,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
@@ -69,27 +71,31 @@ public class UsersListController {
         }
     }
 
-@FXML
-public void addUser(ActionEvent event) {
-    try {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/swe/group04/libraryms/view/AddUser.fxml"));
-        Parent root = loader.load();
+    @FXML
+    public void addUser(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/swe/group04/libraryms/view/AddUser.fxml"));
+            Parent root = loader.load();
 
-        Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
 
-        Stage addUserStage = new Stage();
-        addUserStage.setTitle("Aggiungi utente");
-        addUserStage.setScene(scene);
+            Stage addUserStage = new Stage();
+            addUserStage.setTitle("Aggiungi utente");
+            addUserStage.setScene(scene);
 
-        Stage owner = (Stage) ((Node) event.getSource()).getScene().getWindow();
-        addUserStage.initOwner(owner);
+            Stage owner = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            addUserStage.initOwner(owner);
 
-        addUserStage.show();
+            addUserStage.show();
 
-    } catch (IOException e) {
-        e.printStackTrace();
-        // TODO: eventualmente Alert all'utente
+        } catch (IOException e) {
+            e.printStackTrace();
+            // TODO: eventualmente Alert all'utente
+        }
     }
-}
+
+    @FXML
+    public void showUserDetails(ActionEvent event) {
+    }
 }

@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="600.0" prefWidth="900.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.BookCatalogController">
+<BorderPane prefHeight="600.0" prefWidth="900.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.BookCatalogController">
 
     <!-- HEADER -->
     <top>
@@ -88,7 +88,7 @@
             <children>
 
                 <!-- Visualizza dettagli libro selezionato -->
-                <Button fx:id="detailsButton" styleClass="secondary-button" text="Visualizza dettagli" />
+                <Button fx:id="detailsButton" onAction="#showBookDetails" styleClass="secondary-button" text="Visualizza dettagli" />
 
                 <!-- Aggiungi un nuovo libro -->
                 <Button fx:id="addBookButton" onAction="#addBook" styleClass="action-button" text="Aggiungi libro" />
