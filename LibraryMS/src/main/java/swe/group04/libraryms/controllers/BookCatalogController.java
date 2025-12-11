@@ -76,4 +76,28 @@ public class BookCatalogController {
             // TODO: eventualmente Alert all'utente
         }
     }
+
+    @FXML
+    private void addBook(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/swe/group04/libraryms/view/AddBook.fxml"));
+            Parent root = loader.load();
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
+
+            Stage addBookStage = new Stage();
+            addBookStage.setTitle("Aggiungi libro");
+            addBookStage.setScene(scene);
+
+            Stage owner = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            addBookStage.initOwner(owner);
+
+            addBookStage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            // TODO: eventualmente Alert
+        }
+    }
 }

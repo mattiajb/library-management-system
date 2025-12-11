@@ -5,6 +5,12 @@
 
 package swe.group04.libraryms.controllers;
 
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import swe.group04.libraryms.models.Book;
 
 /**
@@ -15,27 +21,26 @@ import swe.group04.libraryms.models.Book;
  * l'inserimento nel catalogo e il salvataggio dell'archivio aggiornato.
  */
 public class AddBookController {
+
+    @FXML
+    private Button saveButton;
+    @FXML
+    private Button cancelButton;
+    @FXML
+    private TextField titleField;
+    @FXML
+    private TextField authorField;
+    @FXML
+    private TextField yearField;
+    @FXML
+    private TextField isbnField;
+    @FXML
+    private TextField totalCopiesField;
     
-    /**
-     * @brief Registra un nuovo libro nel sistema.
-     *
-     * Riceve un oggetto Book già inizializzato, ne controlla la validità
-     * e lo aggiunge al catalogo della biblioteca. In seguito, richiede
-     * il salvataggio dell'archivio aggiornato.
-     *
-     * @param book oggetto Book contenente tutti i dati del libro da registrare.
-     *
-     * @pre  book != null  
-     *       Il chiamante deve fornire un'istanza di Book valida e già inizializzata
-     *       con tutte le informazioni obbligatorie (titolo, autori, anno di
-     *       pubblicazione, identificativo, numero di copie, ecc.).
-     *
-     * @post Se la validazione ha esito positivo:
-     *       - il libro risulta inserito nel catalogo della biblioteca;
-     *       - lo stato dell'archivio è stato aggiornato e salvato in modo persistente.
-     */
-    public void addNewBook(Book book) {
-        
+    @FXML
+    private void cancelOperation(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.close();
     }
 }
 

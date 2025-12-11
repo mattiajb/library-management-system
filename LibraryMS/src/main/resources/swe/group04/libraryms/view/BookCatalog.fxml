@@ -91,7 +91,7 @@
                 <Button fx:id="detailsButton" styleClass="secondary-button" text="Visualizza dettagli" />
 
                 <!-- Aggiungi un nuovo libro -->
-                <Button fx:id="addBookButton" styleClass="action-button" text="Aggiungi libro" />
+                <Button fx:id="addBookButton" onAction="#addBook" styleClass="action-button" text="Aggiungi libro" />
 
                 <!-- Torna alla home -->
                 <Button fx:id="homeButton" onAction="#backHome" styleClass="secondary-button" text="Torna alla home" />
