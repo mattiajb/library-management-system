@@ -21,22 +21,18 @@ import swe.group04.libraryms.service.ServiceLocator;
 
 /**
  * @brief Gestisce le operazioni relative alla lista dei prestiti.
- *
- * Per ora:
- *  - mostra tutti i prestiti / solo quelli attivi
- *  - espone i bottoni "Visualizza dettagli", "Registra prestito", "Torna alla home"
- *    ma i primi due sono ancora stubs (niente altre view caricate).
  */
 public class LoansListController {
 
-    // ------------------ RIFERIMENTI FXML ------------------
-
+    // Pulsanti footer
     @FXML private Button loanDetailsButton;
     @FXML private Button addLoanButton;
     @FXML private Button loanHomeButton;
 
+    // Filtro
     @FXML private ChoiceBox<String> loanFilterChoiceBox;
 
+    // Tabella
     @FXML private TableView<Loan> loanTable;
     @FXML private TableColumn<Loan, String> loanIdColumn;
     @FXML private TableColumn<Loan, String> userColumn;
@@ -45,22 +41,19 @@ public class LoansListController {
     @FXML private TableColumn<Loan, String> dueDateColumn;
     @FXML private TableColumn<Loan, String> statusColumn;
 
-    // ------------------ SERVICE + STATO ------------------
-
+    // Service
     private final LoanService loanService = ServiceLocator.getLoanService();
     private ObservableList<Loan> observableLoans;
-
     private String currentFilter = "Tutti i prestiti";
 
     private static final DateTimeFormatter DATE_FMT =
             DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // ------------------ INIZIALIZZAZIONE ------------------
+    /* ==================== INIZIALIZZAZIONE ==================== */
 
     @FXML
     public void initialize() {
 
-        // Colonne tabella
         loanIdColumn.setCellValueFactory(cell ->
                 new SimpleStringProperty(String.valueOf(cell.getValue().getLoanId())));
 
@@ -101,20 +94,17 @@ public class LoansListController {
             return new SimpleStringProperty(status);
         });
 
-        // Popola tabella
         refreshTable();
 
-        // Listener filtro
         loanFilterChoiceBox.getSelectionModel().selectedItemProperty()
                 .addListener((obs, oldV, newV) -> applyFilter(newV));
 
-        // Default
         if (!loanFilterChoiceBox.getItems().isEmpty()) {
             loanFilterChoiceBox.setValue("Tutti i prestiti");
         }
     }
 
-    // ------------------ DATI + FILTRI ------------------
+    /* ==================== DATI + FILTRO ==================== */
 
     private void refreshTable() {
         List<Loan> loans = loanService.getLoansSortedByDueDate();
@@ -150,7 +140,7 @@ public class LoansListController {
         loanTable.refresh();
     }
 
-    // ------------------ NAVIGAZIONE ------------------
+    /* ==================== NAVIGAZIONE ==================== */
 
     @FXML
     private void backHome(ActionEvent event) {
@@ -174,12 +164,8 @@ public class LoansListController {
         }
     }
 
-    // ------------------ STUB AZIONI (per ora) ------------------
+    /* ==================== AZIONI BOTTONI ==================== */
 
-    /**
-     * Per ora non apre ancora LoanDetails.fxml.
-     * Mostra solo un messaggio; in seguito lo sostituiremo con il vero flusso.
-     */
     @FXML
     private void showLoanDetails(ActionEvent event) {
         Loan selected = loanTable.getSelectionModel().getSelectedItem();
@@ -188,20 +174,42 @@ public class LoansListController {
             return;
         }
 
-        showInfo("Dettagli prestito non ancora implementati.\n" +
-                 "ID: " + selected.getLoanId());
+        // Per ora solo stub: più avanti collegheremo LoanDetails.fxml
+        showInfo("Dettagli prestito non ancora implementati.\nID: "
+                + selected.getLoanId());
     }
 
-    /**
-     * Per ora non apre ancora RegisterLoan.fxml.
-     * Mostra solo un messaggio; in seguito implementeremo il form.
-     */
     @FXML
     private void registerLoan(ActionEvent event) {
-        showInfo("Registrazione nuovo prestito non ancora implementata.");
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/swe/group04/libraryms/view/RegisterLoan.fxml"));
+
+            Parent root = loader.load();
+
+            // Recupero il controller della finestra figlia
+            RegisterLoanController controller = loader.getController();
+            controller.setOnLoanRegisteredCallback(this::refreshTable);
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(
+                    getClass().getResource("/swe/group04/libraryms/css/style.css")
+                              .toExternalForm());
+
+            Stage stage = new Stage();
+            stage.setTitle("Registra prestito");
+            stage.setScene(scene);
+            stage.initOwner(((Node) event.getSource()).getScene().getWindow());
+
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            showError("Errore durante il caricamento della schermata di registrazione prestito.");
+        }
     }
 
-    // ------------------ UTILITIES UI ------------------
+    /* ==================== UTILITIES UI ==================== */
 
     private void showError(String msg) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
