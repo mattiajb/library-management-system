@@ -36,6 +36,28 @@ public class BookService {
                             : b.getTitle().toLowerCase()
             );
 
+
+    /**
+     * @brief Costruttore utilizzato dal ServiceLocator.
+     *
+     * Riceve un archivio già istanziato e utilizza automaticamente
+     * il LibraryArchiveService ottenibile tramite ServiceLocator.
+     *
+     * @param libraryArchive Archivio condiviso (non null)
+     *
+     * @throws IllegalArgumentException se libraryArchive è null
+     */
+    public BookService(LibraryArchive libraryArchive) {
+        if (libraryArchive == null) {
+            throw new IllegalArgumentException("libraryArchive non può essere nullo");
+        }
+
+        this.libraryArchive = libraryArchive;
+
+        // Usa il servizio già configurato nel ServiceLocator
+        this.libraryArchiveService = ServiceLocator.getArchiveService();
+    }
+
     /**
      * @brief Crea un nuovo BookService.
      *

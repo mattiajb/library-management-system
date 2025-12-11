@@ -7,6 +7,8 @@ package swe.group04.libraryms.controllers;
 
 import java.io.IOException;
 import java.time.LocalDate;
+
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -20,6 +22,8 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import swe.group04.libraryms.models.Book;
+import swe.group04.libraryms.service.BookService;
+import swe.group04.libraryms.service.LibraryArchiveService;
 
 /**
  * @brief Gestisce le operazioni relative alla visualizzazione, creazione,
@@ -30,30 +34,29 @@ import swe.group04.libraryms.models.Book;
  */
 public class BookCatalogController {
 
-    @FXML
-    private Button detailsButton;
-    @FXML
-    private Button addBookButton;
-    @FXML
-    private Button homeButton;
-    @FXML
-    private TextField searchField;
-    @FXML
-    private ChoiceBox<?> bookSortChoiceBox;
-    @FXML
-    private TableView<Book> bookTable;
-    @FXML
-    private TableColumn<Book, String> titleColumn;
-    @FXML
-    private TableColumn<Book, String> authorColumn;
-    @FXML
-    private TableColumn<Book, Integer> yearColumn;
-    @FXML
-    private TableColumn<?, ?> isbnColumn;
-    @FXML
-    private TableColumn<?, ?> availabilityColumn;
-    
+    @FXML private Button detailsButton;
+    @FXML private Button addBookButton;
+    @FXML private Button homeButton;
+    @FXML private Button searchButton;
+    @FXML private TextField searchField;
+    @FXML private ChoiceBox<String> bookSortChoiceBox;
+    @FXML private TableView<Book> bookTable;
+    @FXML private TableColumn<Book, String> titleColumn;
+    @FXML private TableColumn<Book, String> authorColumn;
+    @FXML private TableColumn<Book, Number> yearColumn;
+    @FXML private TableColumn<Book, String> isbnColumn;
+    @FXML private TableColumn<Book, Number> availabilityColumn;
 
+    // ---------------------------------------------------------
+    // SERVICE
+    // ---------------------------------------------------------
+
+    /*
+    private final LibraryArchiveService archiveService = LibraryArchiveService.getInstance();
+    private final BookService bookService = BookService.getInstance();
+    */
+
+    private ObservableList<Book> fullBookList;
 
     @FXML
     public void backHome(ActionEvent event) {

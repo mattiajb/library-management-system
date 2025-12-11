@@ -37,6 +37,26 @@ public class LoanService {
 
 
     /**
+     * @brief Costruttore utilizzato dal ServiceLocator.
+     *
+     * Riceve l'istanza già creata dell'archivio e recupera automaticamente
+     * il LibraryArchiveService configurato.
+     *
+     * @param libraryArchive Archivio condiviso (non null).
+     */
+    public LoanService(LibraryArchive libraryArchive) {
+        if (libraryArchive == null) {
+            throw new IllegalArgumentException("libraryArchive non può essere nullo");
+        }
+
+        this.libraryArchive = libraryArchive;
+        this.libraryArchiveService = ServiceLocator.getArchiveService();
+    }
+
+
+
+
+    /**
      * @brief Costruttore
      */
     public LoanService(LibraryArchive libraryArchive,

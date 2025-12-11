@@ -45,6 +45,31 @@ public class LibraryArchiveService {
     }
 
     /**
+     * @brief Costruttore pensato per l'uso con ServiceLocator.
+     *
+     * Accetta un archivio già creato (condiviso tra i vari service) e
+     * inizializza internamente un ArchiveFileService di default
+     * per la persistenza su file.
+     *
+     * @param libraryArchive Istanza di LibraryArchive da gestire (non null).
+     *
+     * @throws IllegalArgumentException se libraryArchive è null.
+     */
+    public LibraryArchiveService(LibraryArchive libraryArchive) {
+        if (libraryArchive == null) {
+            throw new IllegalArgumentException("libraryArchive non può essere nullo");
+        }
+        this.libraryArchive = libraryArchive;
+
+        // Configurazione di default del servizio di persistenza.
+        // Puoi eventualmente estrarre il percorso in una costante.
+        this.archiveFileService = new ArchiveFileService(
+                "library-archive.dat",
+                new FileService()
+        );
+    }
+
+    /**
      * @brief Garantisce che libraryArchive sia inizializzato.
      *
      * Se è null, crea un nuovo archivio vuoto.

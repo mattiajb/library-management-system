@@ -14,7 +14,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="600.0" prefWidth="900.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.BookCatalogController">
+<BorderPane prefHeight="600.0" prefWidth="900.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.BookCatalogController">
 
     <!-- HEADER -->
     <top>
@@ -45,7 +45,7 @@
 
                         <TextField fx:id="searchField" promptText="Titolo, autore, ISBN..." HBox.hgrow="ALWAYS" />
 
-                        <Button styleClass="secondary-button" text="Cerca" />
+                        <Button fx:id="searchButton" styleClass="secondary-button" text="Cerca" />
 
                         <!-- CHOICE BOX PER ORDINARE I LIBRI -->
                         <ChoiceBox fx:id="bookSortChoiceBox" prefWidth="190">

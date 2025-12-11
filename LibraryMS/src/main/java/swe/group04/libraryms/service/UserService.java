@@ -37,6 +37,25 @@ public class UserService {
             );
 
     /**
+     * @brief Costruttore utilizzato dal ServiceLocator.
+     *
+     * Recupera automaticamente il LibraryArchiveService configurato.
+     *
+     * @param libraryArchive Archivio condiviso (non null).
+     */
+    public UserService(LibraryArchive libraryArchive) {
+
+        if (libraryArchive == null) {
+            throw new IllegalArgumentException("libraryArchive non può essere nullo");
+        }
+
+        this.libraryArchive = libraryArchive;
+        this.libraryArchiveService = ServiceLocator.getArchiveService();
+    }
+
+
+
+    /**
      * @brief Costruisce un nuovo UserService.
      *
      * @param libraryArchive Archivio su cui operare.
