@@ -93,7 +93,7 @@
                 <Button fx:id="userDetailsButton" styleClass="secondary-button" text="Visualizza dettagli" />
 
                 <!-- Aggiungi nuovo utente -->
-                <Button fx:id="addUserButton" styleClass="action-button" text="Aggiungi utente" />
+                <Button fx:id="addUserButton" onAction="#addUser" styleClass="action-button" text="Aggiungi utente" />
 
                 <!-- Torna alla home -->
                 <Button fx:id="userHomeButton" onAction="#backHome" styleClass="secondary-button" text="Torna alla home" />

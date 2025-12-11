@@ -68,4 +68,28 @@ public class UsersListController {
             // TODO: eventualmente Alert all'utente
         }
     }
+
+@FXML
+public void addUser(ActionEvent event) {
+    try {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/swe/group04/libraryms/view/AddUser.fxml"));
+        Parent root = loader.load();
+
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
+
+        Stage addUserStage = new Stage();
+        addUserStage.setTitle("Aggiungi utente");
+        addUserStage.setScene(scene);
+
+        Stage owner = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        addUserStage.initOwner(owner);
+
+        addUserStage.show();
+
+    } catch (IOException e) {
+        e.printStackTrace();
+        // TODO: eventualmente Alert all'utente
+    }
+}
 }
