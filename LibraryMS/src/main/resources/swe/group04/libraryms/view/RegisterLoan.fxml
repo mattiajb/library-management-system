@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="350.0"
+            prefWidth="650.0"
+            styleClass="root-pane"
+            xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="swe.group04.libraryms.controllers.RegisterLoanController">
+
+    <!-- HEADER -->
+    <top>
+        <VBox spacing="5" BorderPane.alignment="CENTER_LEFT">
+            <padding>
+                <Insets bottom="8" left="20" right="20" top="12" />
+            </padding>
+            <children>
+                <Label styleClass="section-title"
+                       text="Registra nuovo prestito" />
+
+                <Label styleClass="main-subtitle"
+                       text="Inserisci i dati necessari per registrare un prestito" />
+
+                <Separator />
+            </children>
+        </VBox>
+    </top>
+
+    <!-- CONTENUTO CENTRALE: FORM -->
+    <center>
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="10" left="20" right="20" top="10" />
+            </padding>
+            <children>
+
+                <GridPane hgap="12" vgap="10">
+                    <children>
+
+                        <!-- Utente (matricola / codice) -->
+                        <Label styleClass="form-label"
+                               text="Matricola dell'utente:"
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="0" />
+
+                        <TextField fx:id="userCodeField"
+                                   promptText="Matricola / codice utente"
+                                   GridPane.columnIndex="1"
+                                   GridPane.rowIndex="0" />
+
+                        <!-- Libro (ISBN) -->
+                        <Label styleClass="form-label"
+                               text="ISBN del libro:"
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="1" />
+
+                        <TextField fx:id="bookIsbnField"
+                                   promptText="Codice ISBN del libro"
+                                   GridPane.columnIndex="1"
+                                   GridPane.rowIndex="1" />
+
+                        <!-- Data restituzione prevista -->
+                        <Label styleClass="form-label"
+                               text="Data restituzione prevista:"
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="2" />
+
+                        <DatePicker fx:id="dueDatePicker"
+                                    GridPane.columnIndex="1"
+                                    GridPane.rowIndex="2" />
+
+                    </children>
+
+                    <columnConstraints>
+                        <ColumnConstraints />
+                        <ColumnConstraints />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
+
+            </children>
+        </VBox>
+    </center>
+
+    <!-- FOOTER: AZIONI -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT"
+              spacing="10"
+              styleClass="footer-bar"
+              BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="8" left="20" right="20" top="8" />
+            </padding>
+            <children>
+
+                <!-- Conferma registrazione prestito -->
+                <Button fx:id="saveButton"
+                        styleClass="action-button"
+                        text="Conferma"
+                        onAction="#saveLoan" />
+
+                <!-- Annulla e chiudi finestra -->
+                <Button fx:id="cancelButton"
+                        styleClass="secondary-button"
+                        text="Annulla"
+                        onAction="#cancelOperation" />
+
+            </children>
+        </HBox>
+    </bottom>
+
+</BorderPane>
