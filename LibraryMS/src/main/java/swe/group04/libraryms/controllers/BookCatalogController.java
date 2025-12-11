@@ -58,6 +58,9 @@ public class BookCatalogController {
     /** Lista osservabile popolata dai dati del servizio */
     private ObservableList<Book> observableBooks;
 
+    /** Ordinamento corrente selezionato dall’utente */
+    private String currentSort = "Ordina per titolo";
+
        /* ============================================================================
                                      INIZIALIZZAZIONE
        ============================================================================ */
@@ -119,6 +122,8 @@ public class BookCatalogController {
                 "Ordina per anno di pubblicazione"
         );
 
+        bookSortChoiceBox.getSelectionModel().select(currentSort);
+
         /* Listener su ordinamento */
         bookSortChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
             applySort(newV);
@@ -139,14 +144,24 @@ public class BookCatalogController {
      * @brief Carica i libri dal servizio e li inserisce nella TableView.
      */
     private void refreshTable() {
-        List<Book> books = bookService.getBooksSortedByTitle();
+        List<Book> books;
+
+        // Applica lo stesso criterio di ordinamento usato dall’utente
+        switch (currentSort) {
+            case "Ordina per autore" ->
+                    books = bookService.getBooksSortedByAuthor();
+
+            case "Ordina per anno di pubblicazione" ->
+                    books = bookService.getBooksSortedByYear();
+
+            default ->
+                    books = bookService.getBooksSortedByTitle();
+        }
 
         if (observableBooks == null) {
-            // Prima inizializzazione
             observableBooks = FXCollections.observableArrayList(books);
             bookTable.setItems(observableBooks);
         } else {
-            // Aggiorna la lista già collegata alla TableView
             observableBooks.setAll(books);
         }
 
@@ -173,30 +188,11 @@ public class BookCatalogController {
     private void applySort(String selected) {
         if (selected == null) return;
 
-        List<Book> list;
+        // Salva la modalità di ordinamento scelta dall’utente
+        currentSort = selected;
 
-        switch (selected) {
-            case "Ordina per autore" -> {
-                list = observableBooks.stream()
-                        .sorted((b1, b2) -> {
-                            String a1 = b1.getAuthors().isEmpty() ? "" : b1.getAuthors().get(0);
-                            String a2 = b2.getAuthors().isEmpty() ? "" : b2.getAuthors().get(0);
-                            return a1.compareToIgnoreCase(a2);
-                        })
-                        .toList();
-            }
-            case "Ordina per anno di pubblicazione" -> {
-                list = observableBooks.stream()
-                        .sorted((b1, b2) -> Integer.compare(b1.getReleaseYear(), b2.getReleaseYear()))
-                        .toList();
-            }
-            default -> { // Ordina per titolo
-                list = bookService.getBooksSortedByTitle();
-            }
-        }
-
-        observableBooks = FXCollections.observableArrayList(list);
-        bookTable.setItems(observableBooks);
+        // Ricarica la tabella applicando l’ordinamento richiesto
+        refreshTable();
     }
 
 

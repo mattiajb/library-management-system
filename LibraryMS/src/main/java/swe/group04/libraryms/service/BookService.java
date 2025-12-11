@@ -149,6 +149,22 @@ public class BookService {
         books.sort(BY_TITLE_COMPARATOR);
         return books;
     }
+
+    public List<Book> getBooksSortedByAuthor() {
+        return getArchive().getBooks().stream()
+                .sorted((b1, b2) -> {
+                    String a1 = b1.getAuthors().isEmpty() ? "" : b1.getAuthors().get(0).toLowerCase();
+                    String a2 = b2.getAuthors().isEmpty() ? "" : b2.getAuthors().get(0).toLowerCase();
+                    return a1.compareTo(a2);
+                })
+                .toList();
+    }
+
+    public List<Book> getBooksSortedByYear() {
+        return getArchive().getBooks().stream()
+                .sorted(Comparator.comparingInt(Book::getReleaseYear))
+                .toList();
+    }
     
     /**
      * @brief Ricerca libri in base a una stringa di query.
