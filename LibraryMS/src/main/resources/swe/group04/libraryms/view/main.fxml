@@ -56,7 +56,7 @@
 
                         <Button fx:id="usersListBtn" maxWidth="250" mnemonicParsing="false" onAction="#openUsersList" styleClass="main-button" text="Lista Utenti" />
 
-                        <Button maxWidth="250" mnemonicParsing="false" styleClass="main-button" text="Lista Prestiti" />
+                        <Button fx:id="loansListBtn" maxWidth="250" mnemonicParsing="false" onAction="#openLoansList" styleClass="main-button" text="Lista Prestiti" />
                     </children>
                 </VBox>
             </children>
@@ -70,13 +70,8 @@
                 <Insets bottom="8" left="15" right="15" top="8" />
             </padding>
             <children>
-                <Label styleClass="status-label" text="Pronto.">
-                    <HBox.margin>
-                        <Insets right="10" />
-                    </HBox.margin>
-                </Label>
 
-                <Button fx:id="exitBtn" mnemonicParsing="false" styleClass="exit-button" text="Esci" />
+                <Button fx:id="exitBtn" mnemonicParsing="false" onAction="#exit" styleClass="exit-button" text="Esci" />
             </children>
         </HBox>
     </bottom>

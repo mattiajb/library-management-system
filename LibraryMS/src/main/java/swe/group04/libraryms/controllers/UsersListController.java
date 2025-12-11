@@ -4,6 +4,19 @@
  */
 package swe.group04.libraryms.controllers;
 
+import java.io.IOException;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 import swe.group04.libraryms.models.User;
 
 /**
@@ -15,50 +28,44 @@ import swe.group04.libraryms.models.User;
  */
 public class UsersListController {
 
-    /**
-     * @brief Mostra l’elenco degli utenti registrati nel sistema.
-     *
-     * @post La lista degli utenti risulta visualizzata all’utente.
-     */
-    public void showUserList(){
-    
-    }
-    
-    /**
-     * @brief Apre la finestra di inserimento di un nuovo utente.
-     *
-     * @post Il form di inserimento risulta mostrato all’utente.
-     */
-    public void openAddUserForm() {
-    
-    }
-    
-    /**
-     * @brief Apre la finestra di modifica dei dati di un utente esistente.
-     *
-     * @param user Utente da modificare.
-     *
-     * @pre  user != null
-     * @pre  user.getUserId() != null
-     *
-     * @post Il form di modifica risulta mostrato con i dati dell'utente precompilati.
-     */
-    public void openEditUserForm(User user) {
-        
-    }
-    
-    /**
-     * @brief Elimina un utente dal sistema.
-     *
-     * @param user Utente da eliminare.
-     *
-     * @pre  user != null
-     * @pre  user.getUserId() != null
-     *
-     * @post L'utente risulta rimosso dall’archivio.
-     * @post L’archivio aggiornato risulta salvato.
-     */
-    public void deleteUser(User user){
-    
+    @FXML
+    private Button userDetailsButton;
+    @FXML
+    private Button addUserButton;
+    @FXML
+    private Button userHomeButton;
+    @FXML
+    private TextField userSearchField;
+    @FXML
+    private ChoiceBox<?> userFilterChoiceBox;
+    @FXML
+    private TableView<?> userTable;
+    @FXML
+    private TableColumn<?, ?> codeClm;
+    @FXML
+    private TableColumn<?, ?> firstNameClm;
+    @FXML
+    private TableColumn<?, ?> lastNameClm;
+    @FXML
+    private TableColumn<?, ?> emailClm;
+    @FXML
+    private TableColumn<?, ?> activeLoansClm;
+
+    @FXML
+    private void backHome(ActionEvent event) {
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/swe/group04/libraryms/view/main.fxml"));
+
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
+
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setTitle("Library Management System");
+            stage.setScene(scene);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            // TODO: eventualmente Alert all'utente
+        }
     }
 }
