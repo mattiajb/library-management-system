@@ -140,8 +140,17 @@ public class BookCatalogController {
      */
     private void refreshTable() {
         List<Book> books = bookService.getBooksSortedByTitle();
-        observableBooks = FXCollections.observableArrayList(books);
-        bookTable.setItems(observableBooks);
+
+        if (observableBooks == null) {
+            // Prima inizializzazione
+            observableBooks = FXCollections.observableArrayList(books);
+            bookTable.setItems(observableBooks);
+        } else {
+            // Aggiorna la lista già collegata alla TableView
+            observableBooks.setAll(books);
+        }
+
+        bookTable.refresh();
     }
 
     /**
@@ -244,6 +253,43 @@ public class BookCatalogController {
         }
     }
 
+    @FXML
+    private void openBookDetails(ActionEvent event) {
+        Book selected = bookTable.getSelectionModel().getSelectedItem();
+
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setHeaderText("Nessun libro selezionato");
+            alert.setContentText("Seleziona un libro dalla tabella per visualizzarne i dettagli.");
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/swe/group04/libraryms/view/BookDetails.fxml")
+            );
+
+            Parent root = loader.load();
+
+            BookDetailsController controller = loader.getController();
+            controller.setBook(selected);
+
+            Stage stage = new Stage();
+            stage.setTitle("Dettagli libro");
+            stage.setScene(new Scene(root));
+            stage.setOnHidden(e -> refreshTable());
+            stage.show();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Errore di caricamento");
+            alert.setContentText("Impossibile aprire la schermata dei dettagli.");
+            alert.showAndWait();
+        }
+    }
+
 
     /* ============================================================================
                                    UTILITIES
@@ -256,7 +302,4 @@ public class BookCatalogController {
         alert.showAndWait();
     }
 
-    @FXML
-    private void showBookDetails(ActionEvent event) {
-    }
 }

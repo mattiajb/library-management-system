@@ -88,7 +88,7 @@
             <children>
 
                 <!-- Visualizza dettagli libro selezionato -->
-                <Button fx:id="detailsButton" onAction="#showBookDetails" styleClass="secondary-button" text="Visualizza dettagli" />
+                <Button fx:id="detailsButton" onAction="#openBookDetails" styleClass="secondary-button" text="Visualizza dettagli" />
 
                 <!-- Aggiungi un nuovo libro -->
                 <Button fx:id="addBookButton" onAction="#addBook" styleClass="action-button" text="Aggiungi libro" />

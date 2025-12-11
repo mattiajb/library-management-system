@@ -96,10 +96,10 @@
             </padding>
             <children>
                 <!-- Salva modifiche -->
-                <Button fx:id="saveButton" styleClass="action-button" text="Salva modifiche" />
+                <Button fx:id="saveButton" onAction="#saveChanges" styleClass="action-button" text="Salva modifiche" />
 
                 <!-- Elimina libro -->
-                <Button fx:id="deleteButton" styleClass="secondary-button" text="Elimina libro" />
+                <Button fx:id="deleteButton" onAction="#deleteBook" styleClass="secondary-button" text="Elimina libro" />
 
                 <!-- Chiudi -->
                 <Button fx:id="cancelButton" onAction="#cancelOperation" styleClass="secondary-button" text="Chiudi" />
