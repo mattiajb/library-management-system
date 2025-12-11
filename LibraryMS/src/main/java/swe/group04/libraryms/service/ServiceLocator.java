@@ -4,19 +4,17 @@ import swe.group04.libraryms.models.LibraryArchive;
 
 public class ServiceLocator {
 
-    private static final LibraryArchive archive = new LibraryArchive();
-
     private static final LibraryArchiveService archiveService =
-            new LibraryArchiveService(archive);
+            new LibraryArchiveService(new LibraryArchive());
 
     private static final BookService bookService =
-            new BookService(archive);
+            new BookService(archiveService);
 
     private static final UserService userService =
-            new UserService(archive);
+            new UserService(archiveService);
 
     private static final LoanService loanService =
-            new LoanService(archive);
+            new LoanService(archiveService);
 
     public static LibraryArchiveService getArchiveService() {
         return archiveService;
@@ -34,3 +32,4 @@ public class ServiceLocator {
         return loanService;
     }
 }
+

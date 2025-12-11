@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
+import swe.group04.libraryms.service.ServiceLocator;
 
 import java.io.IOException;
 
@@ -18,6 +19,17 @@ public class MainController {
     @FXML private Button bookCatalogBtn;
     @FXML private Button usersListBtn;
     @FXML private Button loansListBtn;
+
+    @FXML
+    public void initialize() {
+        try {
+            ServiceLocator.getArchiveService().loadArchive();
+            System.out.println("Archivio caricato correttamente.");
+        } catch (Exception e) {
+            System.err.println("Impossibile caricare l'archivio: " + e.getMessage());
+        }
+    }
+
 
     // ---------------------------------------------------------
     // NAVIGAZIONE - METODO GENERALE

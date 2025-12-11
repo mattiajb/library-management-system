@@ -24,9 +24,8 @@ import swe.group04.libraryms.models.*;
  * i servizi di persistenza per mantenere allineato lo stato degli utenti.
  */
 public class UserService {
-    
-    private LibraryArchive libraryArchive; // Archivio in memoria
-    private LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
+
+    private final LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
 
     // Comparatore per cognome
     private static final Comparator<User> BY_LASTNAME_COMPARATOR =
@@ -37,42 +36,22 @@ public class UserService {
             );
 
     /**
-     * @brief Costruttore utilizzato dal ServiceLocator.
-     *
-     * Recupera automaticamente il LibraryArchiveService configurato.
-     *
-     * @param libraryArchive Archivio condiviso (non null).
+     * Costruttore usato dal ServiceLocator.
      */
-    public UserService(LibraryArchive libraryArchive) {
+    public UserService(LibraryArchiveService libraryArchiveService) {
 
-        if (libraryArchive == null) {
-            throw new IllegalArgumentException("libraryArchive non può essere nullo");
-        }
-
-        this.libraryArchive = libraryArchive;
-        this.libraryArchiveService = ServiceLocator.getArchiveService();
-    }
-
-
-
-    /**
-     * @brief Costruisce un nuovo UserService.
-     *
-     * @param libraryArchive Archivio su cui operare.
-     * @param libraryArchiveService Servizio di persistenza.
-     */
-    public UserService(LibraryArchive libraryArchive,
-                       LibraryArchiveService libraryArchiveService) {
-
-        if (libraryArchive == null) {
-            throw new IllegalArgumentException("libraryArchive non può essere nullo");
-        }
         if (libraryArchiveService == null) {
             throw new IllegalArgumentException("libraryArchiveService non può essere nullo");
         }
 
-        this.libraryArchive = libraryArchive;
         this.libraryArchiveService = libraryArchiveService;
+    }
+
+    /**
+     * Restituisce sempre l’archivio aggiornato.
+     */
+    private LibraryArchive getArchive() {
+        return libraryArchiveService.getLibraryArchive();
     }
 
     /**
@@ -96,7 +75,7 @@ public class UserService {
         validateEmail(user.getEmail());
         validateMatricolaUniquenessOnAdd(user.getCode());
 
-        libraryArchive.addUser(user);
+        getArchive().addUser(user);
         persistChanges();
     }
     
@@ -142,7 +121,7 @@ public class UserService {
             throw new IllegalArgumentException("user non può essere nullo");
         }
 
-        List<Loan> loans = libraryArchive.findLoansByUser(user);
+        List<Loan> loans = getArchive().findLoansByUser(user);
         for (Loan loan : loans) {
             if (loan != null && loan.isActive()) {
                 throw new UserHasActiveLoanException(
@@ -151,7 +130,7 @@ public class UserService {
             }
         }
 
-        libraryArchive.removeUser(user);
+        getArchive().removeUser(user);
         persistChanges();
     }
     
@@ -165,7 +144,7 @@ public class UserService {
      *         non viene implementato.
      */
     public List<User> getUsersSortedByLastName() {
-        List<User> list = new ArrayList<>(libraryArchive.getUsers());
+        List<User> list = new ArrayList<>(getArchive().getUsers());
         list.sort(BY_LASTNAME_COMPARATOR);
         return list;
     }
@@ -195,7 +174,7 @@ public class UserService {
         }
 
         List<User> result = new ArrayList<>();
-        for (User u : libraryArchive.getUsers()) {
+        for (User u : getArchive().getUsers()) {
 
             if (u == null) continue;
 
@@ -251,7 +230,7 @@ public class UserService {
     private void validateMatricolaUniquenessOnAdd(String code)
             throws MandatoryFieldException {
 
-        User existing = libraryArchive.findUserByCode(code);
+        User existing = getArchive().findUserByCode(code);
 
         if (existing != null) {
             throw new MandatoryFieldException(
@@ -263,7 +242,7 @@ public class UserService {
     private void validateMatricolaUniquenessOnUpdate(User user)
             throws MandatoryFieldException {
 
-        User existing = libraryArchive.findUserByCode(user.getCode());
+        User existing = getArchive().findUserByCode(user.getCode());
 
         if (existing != null && existing != user) {
             throw new MandatoryFieldException(
@@ -286,7 +265,7 @@ public class UserService {
 
     private void persistChanges() {
         try {
-            libraryArchiveService.saveArchive(libraryArchive);
+            libraryArchiveService.saveArchive(getArchive());
         } catch (IOException e) {
             throw new RuntimeException(
                     "Errore durante il salvataggio dell'archivio utenti.",

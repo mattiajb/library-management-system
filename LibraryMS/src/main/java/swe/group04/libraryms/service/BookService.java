@@ -24,8 +24,7 @@ import swe.group04.libraryms.models.*;
  * per applicare le regole di business sulle operazioni relative ai libri.
  */
 public class BookService {
-    
-    private LibraryArchive libraryArchive; // Archivio in memoria
+
     private LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
 
     // Comparatore Lower-Case
@@ -38,42 +37,18 @@ public class BookService {
 
 
     /**
-     * @brief Costruttore utilizzato dal ServiceLocator.
-     *
-     * Riceve un archivio già istanziato e utilizza automaticamente
-     * il LibraryArchiveService ottenibile tramite ServiceLocator.
-     *
-     * @param libraryArchive Archivio condiviso (non null)
-     *
-     * @throws IllegalArgumentException se libraryArchive è null
+     * Costruttore usato dal ServiceLocator.
      */
-    public BookService(LibraryArchive libraryArchive) {
-        if (libraryArchive == null) {
-            throw new IllegalArgumentException("libraryArchive non può essere nullo");
-        }
-
-        this.libraryArchive = libraryArchive;
-
-        // Usa il servizio già configurato nel ServiceLocator
-        this.libraryArchiveService = ServiceLocator.getArchiveService();
-    }
-
-    /**
-     * @brief Crea un nuovo BookService.
-     *
-     * @param libraryArchive        Archivio (non null).
-     * @param libraryArchiveService Servizio per la gestione/persistenza dell'archivio (non null).
-     */
-    public BookService(LibraryArchive libraryArchive, LibraryArchiveService libraryArchiveService) {
-        if (libraryArchive == null) {
-            throw new IllegalArgumentException("libraryArchive non può essere nullo");
-        }
+    public BookService(LibraryArchiveService libraryArchiveService) {
         if (libraryArchiveService == null) {
             throw new IllegalArgumentException("libraryArchiveService non può essere nullo");
         }
-
-        this.libraryArchive = libraryArchive;
         this.libraryArchiveService = libraryArchiveService;
+    }
+
+    /** Comodo helper per avere sempre l'archivio aggiornato. */
+    private LibraryArchive getArchive() {
+        return libraryArchiveService.getLibraryArchive();
     }
 
     /**
@@ -99,7 +74,7 @@ public class BookService {
         validateIsbnFormat(book.getIsbn());
         validateIsbnUniquenessOnAdd(book.getIsbn());
 
-        libraryArchive.addBook(book); // Aggiunge il libro all'archivio
+        getArchive().addBook(book); // Aggiunge il libro all'archivio
 
         persistChanges(); // Persistenza delle modifiche
     }
@@ -148,7 +123,7 @@ public class BookService {
             throw new IllegalArgumentException("Il libro non può essere nullo");
         }
 
-        List<Loan> loansForBook = libraryArchive.findLoansByBook(book);
+        List<Loan> loansForBook = getArchive().findLoansByBook(book);
         for (Loan loan : loansForBook) {
             if(loan != null && loan.isActive()){
                 throw new UserHasActiveLoanException(
@@ -157,7 +132,7 @@ public class BookService {
             }
         }
 
-        libraryArchive.removeBook(book); // Rimozione effettiva
+        getArchive().removeBook(book); // Rimozione Effettiva
         persistChanges(); // Persistenza delle modifiche
     }
 
@@ -170,7 +145,7 @@ public class BookService {
      * @return Lista di libri ordinata per titolo (mai null).
      */
     public List<Book> getBooksSortedByTitle() {
-        List<Book> books = new ArrayList<>(libraryArchive.getBooks());
+        List<Book> books = new ArrayList<>(getArchive().getBooks());
         books.sort(BY_TITLE_COMPARATOR);
         return books;
     }
@@ -203,7 +178,7 @@ public class BookService {
         }
 
         List<Book> result = new ArrayList<>(); // Lista che contiene risultato/i
-        for (Book book : libraryArchive.getBooks()) {
+        for (Book book : getArchive().getBooks()) {
             if (book == null) {
                 continue;
             }
@@ -334,7 +309,7 @@ public class BookService {
      * @throws InvalidIsbnException se esiste già un libro con lo stesso ISBN.
      */
     private void validateIsbnUniquenessOnAdd(String isbn) throws InvalidIsbnException {
-        Book existing = libraryArchive.findBookByIsbn(isbn);
+        Book existing = getArchive().findBookByIsbn(isbn);
         if (existing != null) {
             throw new InvalidIsbnException("Esiste già un libro in catalogo con lo stesso ISBN.");
         }
@@ -349,7 +324,7 @@ public class BookService {
      */
     private void persistChanges() {
         try {
-            libraryArchiveService.saveArchive(libraryArchive);
+            libraryArchiveService.saveArchive(getArchive());
         } catch (IOException e) {
             throw new RuntimeException("Errore durante il salvataggio dell'archivio dei libri.", e);
         }

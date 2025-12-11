@@ -27,9 +27,8 @@ import swe.group04.libraryms.models.User;
  * i servizi di persistenza per mantenere allineato lo stato dei prestiti.
  */
 public class LoanService {
-    
-    private LibraryArchive libraryArchive; // Archivio in memoria
-    private LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
+
+    private final LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
 
     // Comparatore per data di restituzione prevista
     private static final Comparator<Loan> BY_DUEDATE_COMPARATOR =
@@ -37,40 +36,18 @@ public class LoanService {
 
 
     /**
-     * @brief Costruttore utilizzato dal ServiceLocator.
-     *
-     * Riceve l'istanza già creata dell'archivio e recupera automaticamente
-     * il LibraryArchiveService configurato.
-     *
-     * @param libraryArchive Archivio condiviso (non null).
+     * Costruttore utilizzato dal ServiceLocator.
      */
-    public LoanService(LibraryArchive libraryArchive) {
-        if (libraryArchive == null) {
-            throw new IllegalArgumentException("libraryArchive non può essere nullo");
-        }
-
-        this.libraryArchive = libraryArchive;
-        this.libraryArchiveService = ServiceLocator.getArchiveService();
-    }
-
-
-
-
-    /**
-     * @brief Costruttore
-     */
-    public LoanService(LibraryArchive libraryArchive,
-                       LibraryArchiveService libraryArchiveService) {
-
-        if (libraryArchive == null) {
-            throw new IllegalArgumentException("libraryArchive non può essere nullo");
-        }
+    public LoanService(LibraryArchiveService libraryArchiveService) {
         if (libraryArchiveService == null) {
             throw new IllegalArgumentException("libraryArchiveService non può essere nullo");
         }
-
-        this.libraryArchive = libraryArchive;
         this.libraryArchiveService = libraryArchiveService;
+    }
+
+    /** Helper: accede sempre all'archivio aggiornato */
+    private LibraryArchive getArchive() {
+        return libraryArchiveService.getLibraryArchive();
     }
 
     /* ================================================================
@@ -114,7 +91,7 @@ public class LoanService {
         /* --- Verifica limite massimo prestiti attivi per utente --- */
 
         int activeLoans = 0;
-        List<Loan> loansByUser = libraryArchive.findLoansByUser(user);
+        List<Loan> loansByUser = getArchive().findLoansByUser(user);
         for(Loan loan : loansByUser) {
             if(loan.isActive()) {
                 activeLoans++;
@@ -133,7 +110,7 @@ public class LoanService {
 
         /* --- Creazione effettiva del prestito --- */
 
-        Loan loan = libraryArchive.addLoan(user, book, dueDate);
+        Loan loan = getArchive().addLoan(user, book, dueDate);
 
         /* --- Aggiornamento copie disponibili del libro --- */
 
@@ -208,7 +185,7 @@ public class LoanService {
 
         List<Loan> result = new ArrayList<>();
 
-        for (Loan loan : libraryArchive.getLoans()) {
+        for (Loan loan : getArchive().getLoans()) {
             if (loan != null && loan.isActive()) {
                 result.add(loan);
             }
@@ -238,7 +215,7 @@ public class LoanService {
      * @brief Restituisce tutti i prestiti ordinati per data di scadenza.
      */
     public List<Loan> getLoansSortedByDueDate() {
-        List<Loan> list = new ArrayList<>(libraryArchive.getLoans());
+        List<Loan> list = new ArrayList<>(getArchive().getLoans());
         list.sort(BY_DUEDATE_COMPARATOR);
         return list;
     }
@@ -252,7 +229,7 @@ public class LoanService {
      */
     private void persistChanges() {
         try {
-            libraryArchiveService.saveArchive(libraryArchive);
+            libraryArchiveService.saveArchive(getArchive());
         } catch (IOException e) {
             throw new RuntimeException("Errore durante il salvataggio dei prestiti.", e);
         }
