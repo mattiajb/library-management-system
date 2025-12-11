@@ -28,12 +28,7 @@ public class UserService {
     private final LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
 
     // Comparatore per cognome
-    private static final Comparator<User> BY_LASTNAME_COMPARATOR =
-            Comparator.comparing(
-                   user -> user.getLastName() == null
-                            ? ""
-                           : user.getLastName().toLowerCase()
-            );
+    private static final Comparator<User> BY_LASTNAME_COMPARATOR = Comparator.comparing(user -> user.getLastName() == null ? "" : user.getLastName().toLowerCase());
 
     /**
      * Costruttore usato dal ServiceLocator.
@@ -197,8 +192,7 @@ public class UserService {
     /*                    Metodi di validazione interna                        */
     /* ---------------------------------------------------------------------- */
 
-    private void validateMandatoryFields(User user)
-            throws MandatoryFieldException {
+    private void validateMandatoryFields(User user) throws MandatoryFieldException {
 
         if (user == null) {
             throw new MandatoryFieldException("L'utente non può essere nullo.");
@@ -225,29 +219,27 @@ public class UserService {
         if (email == null || email.trim().isEmpty()) {
             throw new InvalidEmailException("L'email non può essere vuota.");
         }
+        
+        if(!email.trim().matches("^[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\\.)*unisa\\.it$")) {
+            throw new InvalidEmailException("Email non valida. Sono ammessi solo indirizzi che terminano con 'unisa.it'.");
+        }
     }
 
-    private void validateMatricolaUniquenessOnAdd(String code)
-            throws MandatoryFieldException {
+    private void validateMatricolaUniquenessOnAdd(String code) throws MandatoryFieldException {
 
         User existing = getArchive().findUserByCode(code);
 
         if (existing != null) {
-            throw new MandatoryFieldException(
-                    "Esiste già un utente registrato con la stessa matricola."
-            );
+            throw new MandatoryFieldException("Esiste già un utente registrato con la stessa matricola.");
         }
     }
 
-    private void validateMatricolaUniquenessOnUpdate(User user)
-            throws MandatoryFieldException {
+    private void validateMatricolaUniquenessOnUpdate(User user) throws MandatoryFieldException {
 
         User existing = getArchive().findUserByCode(user.getCode());
 
         if (existing != null && existing != user) {
-            throw new MandatoryFieldException(
-                    "Esiste già un altro utente con la stessa matricola."
-            );
+            throw new MandatoryFieldException("Esiste già un altro utente con la stessa matricola.");
         }
     }
 
@@ -268,9 +260,7 @@ public class UserService {
             libraryArchiveService.saveArchive(getArchive());
         } catch (IOException e) {
             throw new RuntimeException(
-                    "Errore durante il salvataggio dell'archivio utenti.",
-                    e
-            );
+                    "Errore durante il salvataggio dell'archivio utenti.",e);
         }
     }
 }
