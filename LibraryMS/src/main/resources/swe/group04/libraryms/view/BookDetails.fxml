@@ -12,7 +12,9 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="420.0" prefWidth="650.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.BookDetailsController">
+<BorderPane prefHeight="420.0" prefWidth="650.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            stylesheets="/swe/group04/libraryms/css/style.css"
+            fx:controller="swe.group04.libraryms.controllers.BookDetailsController">
 
     <!-- HEADER -->
     <top>

@@ -12,7 +12,9 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="420.0" prefWidth="650.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.UserDetailsController">
+<BorderPane prefHeight="420.0" prefWidth="650.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+            stylesheets="/swe/group04/libraryms/css/style.css"
+            fx:controller="swe.group04.libraryms.controllers.UserDetailsController">
 
     <!-- HEADER -->
     <top>
@@ -43,7 +45,7 @@
                         <!-- Matricola -->
                         <Label styleClass="form-label" text="Matricola:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
 
-                        <TextField fx:id="matricolaField" promptText="ID / matricola utente" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <TextField fx:id="codeField" promptText="ID / matricola utente" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                         <!-- Nome -->
                         <Label styleClass="form-label" text="Nome:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
@@ -90,10 +92,10 @@
             </padding>
             <children>
                 <!-- Salva modifiche -->
-                <Button fx:id="saveButton" styleClass="action-button" text="Salva modifiche" />
+                <Button fx:id="saveButton" onAction="#saveChanges" styleClass="action-button" text="Salva modifiche" />
 
                 <!-- Elimina utente -->
-                <Button fx:id="deleteButton" styleClass="secondary-button" text="Elimina utente" />
+                <Button fx:id="deleteButton" onAction="#deleteUser" styleClass="secondary-button" text="Elimina utente" />
 
                 <!-- Chiudi -->
                 <Button fx:id="cancelButton" onAction="#cancelOperation" styleClass="secondary-button" text="Chiudi" />
