@@ -90,7 +90,7 @@
             </padding>
             <children>
                 <!-- Conferma aggiunta del libro -->
-                <Button fx:id="saveButton" styleClass="action-button" text="Conferma" />
+                <Button fx:id="saveButton" styleClass="action-button" text="Conferma" onAction="#saveBook" />
 
                 <!-- Annulla e torna al catalogo -->
                 <Button fx:id="cancelButton" onAction="#cancelOperation" styleClass="secondary-button" text="Annulla" />
