@@ -122,6 +122,7 @@
     -fx-border-color: #bdc3c7;
     -fx-border-radius: 4;
     -fx-background-radius: 4;
+    -fx-selection-bar: #90caf9;
 }
 
 .table-view .column-header-background {
