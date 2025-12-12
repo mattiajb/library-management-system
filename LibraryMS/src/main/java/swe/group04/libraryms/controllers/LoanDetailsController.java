@@ -6,6 +6,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ComboBox;
 import javafx.stage.Stage;
 import swe.group04.libraryms.models.Loan;
 import swe.group04.libraryms.service.LoanService;

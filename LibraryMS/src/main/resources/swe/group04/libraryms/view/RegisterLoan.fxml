@@ -7,6 +7,7 @@
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -63,16 +64,30 @@
                                    GridPane.rowIndex="0" />
 
                         <!-- Libro (ISBN) -->
+
+                        <!-- Ricerca libro -->
                         <Label styleClass="form-label"
-                               text="ISBN del libro:"
+                               text="Cerca libro:"
                                GridPane.columnIndex="0"
                                GridPane.rowIndex="1" />
 
-                        <TextField fx:id="bookIsbnField"
-                                   promptText="Codice ISBN del libro"
+                        <TextField fx:id="bookSearchField"
+                                   promptText="Cerca per ISBN o titolo"
                                    focusTraversable="false"
                                    GridPane.columnIndex="1"
                                    GridPane.rowIndex="1" />
+
+                        <!-- Libro (ISBN + titolo in tendina) -->
+                        <Label styleClass="form-label"
+                               text="Libro:"
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="1" />
+
+                        <ComboBox fx:id="bookComboBox"
+                                  promptText="Seleziona libro (ISBN → Titolo)"
+                                  focusTraversable="false"
+                                  GridPane.columnIndex="1"
+                                  GridPane.rowIndex="1" />
 
                         <!-- Data restituzione prevista -->
                         <Label styleClass="form-label"

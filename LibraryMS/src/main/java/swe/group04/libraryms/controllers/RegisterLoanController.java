@@ -1,18 +1,18 @@
-/**
- * @file RegisterLoanController.java
- * @brief Controller responsabile della registrazione di un nuovo prestito.
- */
-
 package swe.group04.libraryms.controllers;
 
 import java.time.LocalDate;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.ListCell;
+import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import swe.group04.libraryms.exceptions.MandatoryFieldException;
@@ -31,15 +31,16 @@ import swe.group04.libraryms.service.ServiceLocator;
  *        all'interno del sistema della biblioteca.
  *
  * Il controller:
- *  - legge i dati inseriti (matricola utente, ISBN, data restituzione),
- *  - recupera utente e libro dall'archivio,
+ *  - legge i dati inseriti (matricola utente, libro da tendina, data restituzione),
+ *  - recupera utente dall'archivio,
  *  - delega a LoanService la registrazione del prestito,
  *  - gestisce errori e messaggi all'utente.
  */
 public class RegisterLoanController {
 
     @FXML private TextField userCodeField;
-    @FXML private TextField bookIsbnField;
+    @FXML private ComboBox<Book> bookComboBox;
+    @FXML private TextField bookSearchField;
     @FXML private DatePicker dueDatePicker;
     @FXML private Button saveLoanButton;
     @FXML private Button cancelButton;
@@ -52,6 +53,49 @@ public class RegisterLoanController {
 
     /** Callback opzionale per aggiornare la lista prestiti dopo l'inserimento. */
     private Runnable onLoanRegisteredCallback;
+
+    /** Lista completa dei libri da cui filtrare la ComboBox */
+    private ObservableList<Book> allBooks = FXCollections.observableArrayList();
+
+    /* ============================ INITIALIZE ============================ */
+
+    @FXML
+    public void initialize() {
+        // Popolo la tendina dei libri usando l'archivio
+        LibraryArchive archive = archiveService.getLibraryArchive();
+        if (archive == null) {
+            // Lascio la combo vuota: l'errore verrà gestito in confirmLoan()
+            return;
+        }
+
+        bookComboBox.setItems(FXCollections.observableArrayList(archive.getBooks()));
+
+        // Visualizzazione "ISBN → Titolo" nella lista
+        bookComboBox.setCellFactory(cb -> new ListCell<>() {
+            @Override
+            protected void updateItem(Book book, boolean empty) {
+                super.updateItem(book, empty);
+                if (empty || book == null) {
+                    setText(null);
+                } else {
+                    setText(book.getIsbn() + " \u2192 " + book.getTitle()); // → simbolo freccia
+                }
+            }
+        });
+
+        // Stessa visualizzazione anche sul bottone "chiuso" della ComboBox
+        bookComboBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(Book book, boolean empty) {
+                super.updateItem(book, empty);
+                if (empty || book == null) {
+                    setText(null);
+                } else {
+                    setText(book.getIsbn() + " \u2192 " + book.getTitle());
+                }
+            }
+        });
+    }
 
     /**
      * Permette al chiamante (LoansListController) di registrare una callback
@@ -70,11 +114,12 @@ public class RegisterLoanController {
     private void confirmLoan(ActionEvent event) {
         try {
             String userCode = safeTrim(userCodeField.getText());
-            String isbn     = safeTrim(bookIsbnField.getText());
             LocalDate due   = dueDatePicker.getValue();
+            Book selectedBook = bookComboBox.getValue();
 
-            if (userCode.isEmpty() || isbn.isEmpty() || due == null) {
-                showError("Compila tutti i campi (utente, libro, data di restituzione).");
+            // Controlli di base sui campi
+            if (userCode.isEmpty() || due == null || selectedBook == null) {
+                showError("Compila tutti i campi (matricola utente, libro, data di restituzione).");
                 return;
             }
 
@@ -84,36 +129,43 @@ public class RegisterLoanController {
                 return;
             }
 
+            // Recupero utente dall'archivio
             User user = archive.findUserByCode(userCode);
             if (user == null) {
                 showError("Utente non trovato. Controlla la matricola inserita.");
                 return;
             }
 
-            Book book = archive.findBookByIsbn(isbn);
-            if (book == null) {
-                showError("Libro non trovato. Controlla l'ISBN inserito.");
-                return;
-            }
+            // Il libro è già stato scelto dalla ComboBox → nessuna ricerca per ISBN
+            Book book = selectedBook;
 
+            // Delego la logica di business a LoanService
             Loan loan = loanService.registerLoan(user, book, due);
 
             showInfo("Prestito registrato correttamente.\nID prestito: "
                     + loan.getLoanId());
 
+            // Notifica verso la lista prestiti
             if (onLoanRegisteredCallback != null) {
                 onLoanRegisteredCallback.run();
             }
 
+            // Chiudo la finestra
             closeStage(event);
 
         } catch (MandatoryFieldException |
                  NoAvailableCopiesException |
                  MaxLoansReachedException ex) {
+
+            // Errori di business (vincoli violati) → messaggio chiaro all'utente
             showError(ex.getMessage());
+
         } catch (RuntimeException ex) {
+
+            // Qualsiasi altro problema inatteso (es. I/O durante il salvataggio)
             showError("Si è verificato un errore durante la registrazione del prestito.\nDettagli: "
                     + ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
