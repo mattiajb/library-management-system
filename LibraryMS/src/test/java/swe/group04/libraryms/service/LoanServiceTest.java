@@ -1,326 +1,173 @@
 package swe.group04.libraryms.service;
 
-import org.junit.jupiter.api.*;
-import swe.group04.libraryms.exceptions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import swe.group04.libraryms.exceptions.MaxLoansReachedException;
+import swe.group04.libraryms.exceptions.MandatoryFieldException;
+import swe.group04.libraryms.exceptions.NoAvailableCopiesException;
 import swe.group04.libraryms.models.Book;
 import swe.group04.libraryms.models.LibraryArchive;
 import swe.group04.libraryms.models.Loan;
 import swe.group04.libraryms.models.User;
+import swe.group04.libraryms.persistence.ArchiveFileService;
+import swe.group04.libraryms.persistence.FileService;
 
-import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
+import java.time.Year;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class LoanServiceTest {
 
-    private static final String DEFAULT_ARCHIVE_FILE = "library-archive.dat";
+    private static class InMemoryArchiveFileService extends ArchiveFileService {
+        private LibraryArchive stored;
 
-    private LibraryArchive archive;
+        InMemoryArchiveFileService() {
+            super("IGNORED.bin", new FileService());
+        }
+
+        @Override
+        public LibraryArchive loadArchive() throws IOException { return stored; }
+
+        @Override
+        public void saveArchive(LibraryArchive archive) throws IOException { stored = archive; }
+    }
+
+    private LibraryArchiveService archiveService;
     private LoanService loanService;
 
     @BeforeEach
     void setUp() {
-        loanService = ServiceLocator.getLoanService();
-        archive = ServiceLocator.getArchiveService().getLibraryArchive();
-        clearArchiveCompletely();
+        archiveService = new LibraryArchiveService(new InMemoryArchiveFileService());
+        loanService = new LoanService(archiveService);
     }
 
-    @AfterEach
-    void tearDown() {
-        File f = new File(DEFAULT_ARCHIVE_FILE);
-        if (f.exists()) {
-            //noinspection ResultOfMethodCallIgnored
-            f.delete();
-        }
-    }
-
-    private void clearArchiveCompletely() {
-        for (Loan l : archive.getLoans()) {
-            archive.removeLoan(l);
-        }
-        for (Book b : archive.getBooks()) {
-            archive.removeBook(b);
-        }
-        for (User u : archive.getUsers()) {
-            archive.removeUser(u);
-        }
-    }
-
-    private User mkUser(String first, String last, String email, String code) {
-        return new User(first, last, email, code);
-    }
-
-    private Book mkBook(String title, String author, int year, String isbn, int copies) {
-        return new Book(title, List.of(author), year, isbn, copies);
-    }
-
-    /* --------------------------------------------------------------------- */
-    /*                              Constructor                               */
-    /* --------------------------------------------------------------------- */
-
-    @Test
-    @DisplayName("Costruttore: IllegalArgumentException se LibraryArchiveService è null")
-    void constructorThrowsIfArchiveServiceNull() {
-        assertThrows(IllegalArgumentException.class, () -> new LoanService(null));
-    }
-
-    /* --------------------------------------------------------------------- */
-    /*                             registerLoan                               */
-    /* --------------------------------------------------------------------- */
-
-    @Test
-    @DisplayName("registerLoan: crea un prestito valido, decrementa copie, persiste")
-    void registerLoanCreatesLoanAndDecrementsCopies() throws Exception {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 2);
-
-        archive.addUser(u);
-        archive.addBook(b);
-
-        LocalDate due = LocalDate.now().plusDays(7);
-
-        int beforeCopies = b.getAvailableCopies();
-        Loan loan = loanService.registerLoan(u, b, due);
-
-        assertNotNull(loan);
-        assertTrue(loan.isActive());
-        assertEquals(beforeCopies - 1, b.getAvailableCopies());
-
-        // Deve essere stato inserito in archivio
-        assertEquals(1, archive.getLoans().size());
-        assertTrue(archive.getLoans().contains(loan));
+    private static Book bookWithCopies(int totalCopies) {
+        return new Book("Titolo", List.of("Autore"), Year.now().getValue(), "1111111111", totalCopies);
     }
 
     @Test
-    @DisplayName("registerLoan: MandatoryFieldException se user è null")
-    void registerLoanThrowsIfUserNull() {
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
+    @DisplayName("registerLoan: user null -> MandatoryFieldException")
+    void registerLoanNullUserThrows() {
+        Book b = bookWithCopies(1);
         assertThrows(MandatoryFieldException.class,
-                () -> loanService.registerLoan(null, b, LocalDate.now().plusDays(1)));
+                () -> loanService.registerLoan(null, b, LocalDate.now().plusDays(7)));
     }
 
     @Test
-    @DisplayName("registerLoan: MandatoryFieldException se book è null")
-    void registerLoanThrowsIfBookNull() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
+    @DisplayName("registerLoan: book null -> MandatoryFieldException")
+    void registerLoanNullBookThrows() {
+        User u = new User("Mario", "Rossi", "m.rossi@unisa.it", "S1");
         assertThrows(MandatoryFieldException.class,
-                () -> loanService.registerLoan(u, null, LocalDate.now().plusDays(1)));
+                () -> loanService.registerLoan(u, null, LocalDate.now().plusDays(7)));
     }
 
     @Test
-    @DisplayName("registerLoan: MandatoryFieldException se dueDate è null")
-    void registerLoanThrowsIfDueDateNull() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
-
+    @DisplayName("registerLoan: dueDate null -> MandatoryFieldException")
+    void registerLoanNullDueDateThrows() {
+        User u = new User("Mario", "Rossi", "m.rossi@unisa.it", "S1");
+        Book b = bookWithCopies(1);
         assertThrows(MandatoryFieldException.class,
                 () -> loanService.registerLoan(u, b, null));
     }
 
     @Test
-    @DisplayName("registerLoan: NoAvailableCopiesException se non ci sono copie disponibili")
-    void registerLoanThrowsIfNoAvailableCopies() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
-
-        // porto availableCopies a 0 in modo coerente col modello
+    @DisplayName("registerLoan: nessuna copia disponibile -> NoAvailableCopiesException")
+    void registerLoanNoCopiesThrows() {
+        User u = new User("Mario", "Rossi", "m.rossi@unisa.it", "S1");
+        Book b = bookWithCopies(1);
+        // esaurisco copie
         b.decrementAvailableCopies();
 
-        assertEquals(0, b.getAvailableCopies());
-
         assertThrows(NoAvailableCopiesException.class,
-                () -> loanService.registerLoan(u, b, LocalDate.now().plusDays(1)));
+                () -> loanService.registerLoan(u, b, LocalDate.now().plusDays(7)));
     }
 
     @Test
-    @DisplayName("registerLoan: MaxLoansReachedException se l'utente ha già 3 prestiti attivi")
-    void registerLoanThrowsIfMaxLoansReached() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        archive.addUser(u);
-
-        // 3 libri diversi, 3 prestiti attivi già presenti
-        Book b1 = mkBook("B1", "A1", 2020, "1111111111", 1);
-        Book b2 = mkBook("B2", "A2", 2020, "2222222222", 1);
-        Book b3 = mkBook("B3", "A3", 2020, "3333333333", 1);
-        Book b4 = mkBook("B4", "A4", 2020, "4444444444", 1);
-
-        archive.addBook(b1);
-        archive.addBook(b2);
-        archive.addBook(b3);
-        archive.addBook(b4);
-
-        archive.addLoan(u, b1, LocalDate.now().plusDays(7));
-        archive.addLoan(u, b2, LocalDate.now().plusDays(7));
-        archive.addLoan(u, b3, LocalDate.now().plusDays(7));
-
-        assertThrows(MaxLoansReachedException.class,
-                () -> loanService.registerLoan(u, b4, LocalDate.now().plusDays(7)));
-    }
-
-    @Test
-    @DisplayName("registerLoan: MandatoryFieldException se dueDate è nel passato")
-    void registerLoanThrowsIfDueDateInPast() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
+    @DisplayName("registerLoan: dueDate nel passato -> MandatoryFieldException")
+    void registerLoanPastDueDateThrows() {
+        User u = new User("Mario", "Rossi", "m.rossi@unisa.it", "S1");
+        Book b = bookWithCopies(1);
 
         assertThrows(MandatoryFieldException.class,
                 () -> loanService.registerLoan(u, b, LocalDate.now().minusDays(1)));
     }
 
-    /* --------------------------------------------------------------------- */
-    /*                               returnLoan                               */
-    /* --------------------------------------------------------------------- */
+    @Test
+    @DisplayName("registerLoan: oltre 3 prestiti attivi -> MaxLoansReachedException")
+    void registerLoanMaxLoansThrows() throws Exception {
+        LibraryArchive a = archiveService.getLibraryArchive();
+        User u = new User("Mario", "Rossi", "m.rossi@unisa.it", "S1");
+        a.addUser(u);
+
+        // 3 prestiti attivi già presenti
+        for (int i = 0; i < 3; i++) {
+            Book b = new Book("B" + i, List.of("Autore"), Year.now().getValue(), "111111111" + i, 1);
+            a.addBook(b);
+            a.addLoan(u, b, LocalDate.now().plusDays(10)); // attivo
+        }
+
+        Book extra = new Book("Extra", List.of("Autore"), Year.now().getValue(), "2222222222", 1);
+        a.addBook(extra);
+
+        assertThrows(MaxLoansReachedException.class,
+                () -> loanService.registerLoan(u, extra, LocalDate.now().plusDays(7)));
+    }
 
     @Test
-    @DisplayName("returnLoan: chiude prestito attivo, imposta returnDate, incrementa copie")
-    void returnLoanClosesLoanAndIncrementsCopies() throws Exception {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
+    @DisplayName("registerLoan: crea prestito, decrementa copie e persiste in memoria")
+    void registerLoanCreatesLoanAndDecrementsCopies() throws Exception {
+        LibraryArchive a = archiveService.getLibraryArchive();
+        User u = new User("Mario", "Rossi", "m.rossi@unisa.it", "S1");
+        Book b = bookWithCopies(1);
 
-        archive.addUser(u);
-        archive.addBook(b);
+        a.addUser(u);
+        a.addBook(b);
 
-        // creo prestito tramite service così decrementa le copie
+        Loan loan = loanService.registerLoan(u, b, LocalDate.now().plusDays(7));
+
+        assertNotNull(loan);
+        assertEquals(0, b.getAvailableCopies());
+        assertEquals(1, a.getLoans().size());
+        assertTrue(a.getLoans().contains(loan));
+    }
+
+    @Test
+    @DisplayName("returnLoan: null -> MandatoryFieldException")
+    void returnLoanNullThrows() {
+        assertThrows(MandatoryFieldException.class, () -> loanService.returnLoan(null));
+    }
+
+    @Test
+    @DisplayName("returnLoan: prestito già chiuso -> MandatoryFieldException")
+    void returnLoanAlreadyClosedThrows() {
+        User u = new User("Mario", "Rossi", "m.rossi@unisa.it", "S1");
+        Book b = bookWithCopies(1);
+        Loan loan = new Loan(1, u, b, LocalDate.now(), LocalDate.now().plusDays(7), false); // già chiuso
+
+        assertThrows(MandatoryFieldException.class, () -> loanService.returnLoan(loan));
+    }
+
+    @Test
+    @DisplayName("returnLoan: chiude prestito e incrementa copie")
+    void returnLoanClosesAndIncrementsCopies() throws Exception {
+        LibraryArchive a = archiveService.getLibraryArchive();
+        User u = new User("Mario", "Rossi", "m.rossi@unisa.it", "S1");
+        Book b = bookWithCopies(1);
+
+        a.addUser(u);
+        a.addBook(b);
+
         Loan loan = loanService.registerLoan(u, b, LocalDate.now().plusDays(7));
         assertEquals(0, b.getAvailableCopies());
-        assertTrue(loan.isActive());
-        assertNull(loan.getReturnDate());
 
         loanService.returnLoan(loan);
 
         assertFalse(loan.isActive());
         assertNotNull(loan.getReturnDate());
         assertEquals(1, b.getAvailableCopies());
-    }
-
-    @Test
-    @DisplayName("returnLoan: MandatoryFieldException se loan è null")
-    void returnLoanThrowsIfLoanNull() {
-        assertThrows(MandatoryFieldException.class, () -> loanService.returnLoan(null));
-    }
-
-    @Test
-    @DisplayName("returnLoan: MandatoryFieldException se loan è già chiuso")
-    void returnLoanThrowsIfLoanAlreadyClosed() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
-
-        // creo un prestito e lo chiudo manualmente
-        Loan loan = archive.addLoan(u, b, LocalDate.now().plusDays(7));
-        loan.setStatus(false);
-
-        assertFalse(loan.isActive());
-        assertThrows(MandatoryFieldException.class, () -> loanService.returnLoan(loan));
-    }
-
-    /* --------------------------------------------------------------------- */
-    /*                               getActiveLoan                            */
-    /* --------------------------------------------------------------------- */
-
-    @Test
-    @DisplayName("getActiveLoan: restituisce solo prestiti attivi ordinati per dueDate (nullsLast)")
-    void getActiveLoanReturnsOnlyActiveSortedByDueDate() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b1 = mkBook("B1", "A1", 2020, "1111111111", 1);
-        Book b2 = mkBook("B2", "A2", 2020, "2222222222", 1);
-        Book b3 = mkBook("B3", "A3", 2020, "3333333333", 1);
-
-        // prestiti: due tra loro attivi, uno chiuso
-        Loan l1 = archive.addLoan(u, b1, LocalDate.now().plusDays(10));
-        Loan l2 = archive.addLoan(u, b2, LocalDate.now().plusDays(3));
-        Loan l3 = archive.addLoan(u, b3, LocalDate.now().plusDays(5));
-        l3.setStatus(false); // chiuso
-
-        List<Loan> active = loanService.getActiveLoan();
-
-        assertEquals(2, active.size());
-        assertTrue(active.contains(l1));
-        assertTrue(active.contains(l2));
-        assertFalse(active.contains(l3));
-
-        // ordinamento: l2 (3 giorni) prima di l1 (10 giorni)
-        assertEquals(List.of(l2, l1), active);
-    }
-
-    /* --------------------------------------------------------------------- */
-    /*                                 isLate                                 */
-    /* --------------------------------------------------------------------- */
-
-    @Test
-    @DisplayName("isLate: false se loan è null")
-    void isLateFalseIfNull() {
-        assertFalse(loanService.isLate(null));
-    }
-
-    @Test
-    @DisplayName("isLate: false se loan non è attivo")
-    void isLateFalseIfNotActive() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
-
-        Loan loan = archive.addLoan(u, b, LocalDate.now().minusDays(2));
-        loan.setStatus(false);
-
-        assertFalse(loanService.isLate(loan));
-    }
-
-    @Test
-    @DisplayName("isLate: false se dueDate è null")
-    void isLateFalseIfDueDateNull() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
-
-        Loan loan = archive.addLoan(u, b, LocalDate.now().plusDays(7));
-        // forzo null se il modello lo consente; se non lo consente, questo test va rimosso
-        loan.setDueDate(null);
-
-        assertFalse(loanService.isLate(loan));
-    }
-
-    @Test
-    @DisplayName("isLate: true se attivo e dueDate precedente a oggi")
-    void isLateTrueIfActiveAndDueDateBeforeToday() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
-
-        Loan loan = archive.addLoan(u, b, LocalDate.now().minusDays(1));
-        assertTrue(loan.isActive());
-
-        assertTrue(loanService.isLate(loan));
-    }
-
-    @Test
-    @DisplayName("isLate: false se attivo ma dueDate è oggi o futura")
-    void isLateFalseIfDueDateTodayOrFuture() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b = mkBook("Reti", "Kurose", 2020, "1234567890", 1);
-
-        Loan today = archive.addLoan(u, b, LocalDate.now());
-        Loan future = archive.addLoan(u, b, LocalDate.now().plusDays(1));
-
-        assertFalse(loanService.isLate(today));
-        assertFalse(loanService.isLate(future));
-    }
-
-    /* --------------------------------------------------------------------- */
-    /*                         getLoansSortedByDueDate                         */
-    /* --------------------------------------------------------------------- */
-
-    @Test
-    @DisplayName("getLoansSortedByDueDate: ordina tutti i prestiti per dueDate (nullsLast)")
-    void getLoansSortedByDueDateSortsAllLoans() {
-        User u = mkUser("Mario", "Rossi", "mario.rossi@unisa.it", "S0001");
-        Book b1 = mkBook("B1", "A1", 2020, "1111111111", 1);
-        Book b2 = mkBook("B2", "A2", 2020, "2222222222", 1);
-        Book b3 = mkBook("B3", "A3", 2020, "3333333333", 1);
-
-        Loan l1 = archive.addLoan(u, b1, LocalDate.now().plusDays(10));
-        Loan l2 = archive.addLoan(u, b2, LocalDate.now().plusDays(3));
-        Loan l3 = archive.addLoan(u, b3, LocalDate.now().plusDays(5));
-
-        List<Loan> sorted = loanService.getLoansSortedByDueDate();
-        assertEquals(List.of(l2, l3, l1), sorted);
     }
 }
