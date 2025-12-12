@@ -2,12 +2,12 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -51,41 +51,65 @@
                 <GridPane hgap="12" vgap="10">
                     <children>
 
-                        <!-- Utente (matricola / nome cognome in tendina) -->
+                        <!-- UTENTE: label + search field sulla stessa riga -->
                         <Label styleClass="form-label"
                                text="Utente:"
                                GridPane.columnIndex="0"
                                GridPane.rowIndex="0" />
 
-                        <ComboBox fx:id="userComboBox"
-                                  promptText="Seleziona utente (Matricola → Nome Cognome)"
-                                  focusTraversable="false"
-                                  GridPane.columnIndex="1"
-                                  GridPane.rowIndex="0" />
+                        <TextField fx:id="userSearchField"
+                                   prefWidth="380.0"
+                                   promptText="Cerca per matricola, nome o cognome... 🔍"
+                                   GridPane.columnIndex="1"
+                                   GridPane.rowIndex="0" />
 
-                        <!-- Libro (ISBN + titolo in tendina) -->
-                        <Label styleClass="form-label"
-                               text="Libro:"
+                        <!-- Combo utente sotto la ricerca -->
+                        <Label text=""
                                GridPane.columnIndex="0"
                                GridPane.rowIndex="1" />
 
-                        <ComboBox fx:id="bookComboBox"
-                                  promptText="Seleziona libro (ISBN → Titolo)"
+                        <ComboBox fx:id="userComboBox"
+                                  prefWidth="380.0"
+                                  promptText="Seleziona utente (Matricola → Nome Cognome)"
                                   focusTraversable="false"
                                   GridPane.columnIndex="1"
                                   GridPane.rowIndex="1" />
 
-                        <!-- Data restituzione prevista -->
+                        <!-- LIBRO: label + search field sulla stessa riga -->
+                        <Label styleClass="form-label"
+                               text="Libro:"
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="2" />
+
+                        <TextField fx:id="bookSearchField"
+                                   prefWidth="380.0"
+                                   promptText="Cerca per ISBN o titolo... 🔍"
+                                   GridPane.columnIndex="1"
+                                   GridPane.rowIndex="2" />
+
+                        <!-- Combo libro sotto la ricerca -->
+                        <Label text=""
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="3" />
+
+                        <ComboBox fx:id="bookComboBox"
+                                  prefWidth="380.0"
+                                  promptText="Seleziona libro (ISBN → Titolo)"
+                                  focusTraversable="false"
+                                  GridPane.columnIndex="1"
+                                  GridPane.rowIndex="3" />
+
+                        <!-- DATA RESTITUZIONE -->
                         <Label styleClass="form-label"
                                text="Data restituzione prevista:"
                                GridPane.columnIndex="0"
-                               GridPane.rowIndex="2" />
+                               GridPane.rowIndex="4" />
 
                         <DatePicker fx:id="dueDatePicker"
                                     promptText="gg/mm/aaaa"
                                     focusTraversable="false"
                                     GridPane.columnIndex="1"
-                                    GridPane.rowIndex="2" />
+                                    GridPane.rowIndex="4" />
 
                     </children>
 
@@ -94,6 +118,8 @@
                         <ColumnConstraints />
                     </columnConstraints>
                     <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />
                         <RowConstraints />
