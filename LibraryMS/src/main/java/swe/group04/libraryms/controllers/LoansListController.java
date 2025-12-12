@@ -50,6 +50,9 @@ public class LoansListController {
 
     private ObservableList<Loan> observableLoans;
 
+    // Tiene traccia dell’ultimo filtro applicato.
+    private String currentFilter = "Tutti i prestiti";
+
     /* ============================================================================
                                   INITIALIZE
        ============================================================================ */
@@ -115,27 +118,43 @@ public class LoansListController {
                             CARICAMENTO / FILTRI
        ============================================================================ */
 
+    /**
+     * Ricarica i dati rispettando il filtro attualmente selezionato.
+     */
     private void refreshTable() {
-        List<Loan> loans = loanService.getLoansSortedByDueDate();
-        if (observableLoans == null) {
-            observableLoans = FXCollections.observableArrayList(loans);
-            loanTable.setItems(observableLoans);
-        } else {
-            observableLoans.setAll(loans);
-        }
-        loanTable.refresh();
+        String selected =
+                (loanFilterChoiceBox != null
+                        && loanFilterChoiceBox.getSelectionModel().getSelectedItem() != null)
+                        ? loanFilterChoiceBox.getSelectionModel().getSelectedItem()
+                        : currentFilter;
+
+        applyFilter(selected);
     }
 
+    /**
+     * Applica il filtro "Tutti i prestiti" / "Prestiti attivi".
+     */
     private void applyFilter(String filter) {
-        if (filter == null) return;
+        if (filter == null) {
+            filter = "Tutti i prestiti";
+        }
+
+        currentFilter = filter;
 
         List<Loan> list;
+
         switch (filter) {
             case "Prestiti attivi" -> list = loanService.getActiveLoan();
             default -> list = loanService.getLoansSortedByDueDate();
         }
 
-        observableLoans.setAll(list);
+        if (observableLoans == null) {
+            observableLoans = FXCollections.observableArrayList(list);
+            loanTable.setItems(observableLoans);
+        } else {
+            observableLoans.setAll(list);
+        }
+
         loanTable.refresh();
     }
 
