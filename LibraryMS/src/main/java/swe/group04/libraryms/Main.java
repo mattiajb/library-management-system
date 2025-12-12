@@ -1,3 +1,14 @@
+/**
+ * @file Main.java
+ * @brief Punto di ingresso dell'applicazione Library Management System.
+ *
+ * Responsabilità principali:
+ * - avviare il runtime JavaFX
+ * - caricare la scena iniziale (main.fxml)
+ * - applicare il foglio di stile globale
+ * - visualizzare la finestra principale dell'applicazione
+ *
+ */
 package swe.group04.libraryms;
 
 import javafx.application.Application;
