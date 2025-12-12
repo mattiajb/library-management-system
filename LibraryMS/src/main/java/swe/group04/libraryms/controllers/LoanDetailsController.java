@@ -1,10 +1,12 @@
 package swe.group04.libraryms.controllers;
 
+import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ComboBox;
 import javafx.stage.Stage;
@@ -96,9 +98,6 @@ public class LoanDetailsController {
         registerReturnButton.setDisable(!loan.isActive());
     }
 
-    /**
-     * @brief Registra la restituzione del libro (UC17).
-     */
     @FXML
     private void registerReturn(ActionEvent event) {
         if (loan == null) {
@@ -108,6 +107,15 @@ public class LoanDetailsController {
 
         if (!loan.isActive()) {
             showWarning("Il prestito risulta già concluso.");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Conferma restituzione");
+        confirm.setHeaderText("Vuoi registrare la restituzione di questo prestito?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
             return;
         }
 
@@ -124,8 +132,7 @@ public class LoanDetailsController {
 
         } catch (RuntimeException e) {
             e.printStackTrace();
-            showError("Si è verificato un errore durante la registrazione della restituzione.\nDettagli: "
-                    + e.getMessage());
+            showError("Si è verificato un errore durante la registrazione della restituzione.\nDettagli: "+ e.getMessage());
         }
     }
 
