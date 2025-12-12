@@ -51,19 +51,17 @@
                 <GridPane hgap="12" vgap="10">
                     <children>
 
-                        <!-- Utente (matricola / codice) -->
+                        <!-- Utente (matricola / nome cognome in tendina) -->
                         <Label styleClass="form-label"
-                               text="Matricola dell'utente:"
+                               text="Utente:"
                                GridPane.columnIndex="0"
                                GridPane.rowIndex="0" />
 
-                        <TextField fx:id="userCodeField"
-                                   promptText="Matricola / codice utente"
-                                   focusTraversable="false"
-                                   GridPane.columnIndex="1"
-                                   GridPane.rowIndex="0" />
-
-                        <!-- Libro (ISBN) -->
+                        <ComboBox fx:id="userComboBox"
+                                  promptText="Seleziona utente (Matricola → Nome Cognome)"
+                                  focusTraversable="false"
+                                  GridPane.columnIndex="1"
+                                  GridPane.rowIndex="0" />
 
                         <!-- Libro (ISBN + titolo in tendina) -->
                         <Label styleClass="form-label"

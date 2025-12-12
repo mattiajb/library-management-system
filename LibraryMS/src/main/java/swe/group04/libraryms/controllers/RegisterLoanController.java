@@ -11,7 +11,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import swe.group04.libraryms.exceptions.MandatoryFieldException;
 import swe.group04.libraryms.exceptions.MaxLoansReachedException;
@@ -29,42 +28,100 @@ import swe.group04.libraryms.service.ServiceLocator;
  *        all'interno del sistema della biblioteca.
  *
  * Il controller:
- *  - legge i dati inseriti (matricola utente, libro da tendina, data restituzione),
- *  - recupera utente dall'archivio,
+ *  - legge i dati inseriti (utente da tendina, libro da tendina, data restituzione),
+ *  - recupera gli oggetti dominio dall'archivio,
  *  - delega a LoanService la registrazione del prestito,
  *  - gestisce errori e messaggi all'utente.
  */
 public class RegisterLoanController {
 
-    @FXML private TextField userCodeField;
+    /* ============================================================
+                           FXML COMPONENTS
+       ============================================================ */
+
+    /** Utente selezionato (Matricola → Nome Cognome). */
+    @FXML private ComboBox<User> userComboBox;
+
+    /** Libro selezionato (ISBN → Titolo). */
     @FXML private ComboBox<Book> bookComboBox;
+
+    /** Data di restituzione prevista. */
     @FXML private DatePicker dueDatePicker;
+
     @FXML private Button saveLoanButton;
     @FXML private Button cancelButton;
 
-    /** Servizi applicativi */
+    /* ============================================================
+                           SERVICES
+       ============================================================ */
+
+    /** Servizio applicativo per la logica di prestito. */
     private final LoanService loanService =
             ServiceLocator.getLoanService();
+
+    /** Accesso all’archivio (libri + utenti). */
     private final LibraryArchiveService archiveService =
             ServiceLocator.getArchiveService();
 
     /** Callback opzionale per aggiornare la lista prestiti dopo l'inserimento. */
     private Runnable onLoanRegisteredCallback;
 
-    /* ============================ INITIALIZE ============================ */
+    /* ============================================================
+                             INITIALIZE
+       ============================================================ */
 
+    /**
+     * Inizializza le ComboBox caricando utenti e libri dall'archivio
+     * e configurando la visualizzazione "user: Matricola → Nome Cognome"
+     * e "book: ISBN → Titolo".
+     *
+     * NB: se l'archivio non è disponibile, le combo restano vuote; l'errore
+     * verrà gestito in confirmLoan().
+     */
     @FXML
     public void initialize() {
-        // Popolo la tendina dei libri usando l'archivio
+
         LibraryArchive archive = archiveService.getLibraryArchive();
         if (archive == null) {
-            // Lascio la combo vuota: l'errore verrà gestito in confirmLoan()
+            // Nessun archivio caricato: le combo resteranno vuote.
+            // In confirmLoan() verrà mostrato un messaggio di errore chiaro.
             return;
         }
 
+        /* --------- POPOLAMENTO COMBO UTENTI --------- */
+        userComboBox.setItems(FXCollections.observableArrayList(archive.getUsers()));
+
+        // Come si presentano gli elementi nel menu a discesa
+        userComboBox.setCellFactory(cb -> new ListCell<>() {
+            @Override
+            protected void updateItem(User user, boolean empty) {
+                super.updateItem(user, empty);
+                if (empty || user == null) {
+                    setText(null);
+                } else {
+                    setText(user.getCode() + " \u2192 "   // matricola →
+                            + user.getFirstName() + " " + user.getLastName());
+                }
+            }
+        });
+
+        // Come appare il valore selezionato nel "bottone" della ComboBox
+        userComboBox.setButtonCell(new ListCell<>() {
+            @Override
+            protected void updateItem(User user, boolean empty) {
+                super.updateItem(user, empty);
+                if (empty || user == null) {
+                    setText(null);
+                } else {
+                    setText(user.getCode() + " \u2192 "
+                            + user.getFirstName() + " " + user.getLastName());
+                }
+            }
+        });
+
+        /* --------- POPOLAMENTO COMBO LIBRI --------- */
         bookComboBox.setItems(FXCollections.observableArrayList(archive.getBooks()));
 
-        // Visualizzazione "ISBN → Titolo" nella lista
         bookComboBox.setCellFactory(cb -> new ListCell<>() {
             @Override
             protected void updateItem(Book book, boolean empty) {
@@ -72,12 +129,11 @@ public class RegisterLoanController {
                 if (empty || book == null) {
                     setText(null);
                 } else {
-                    setText(book.getIsbn() + " \u2192 " + book.getTitle()); // → simbolo freccia
+                    setText(book.getIsbn() + " \u2192 " + book.getTitle());
                 }
             }
         });
 
-        // Stessa visualizzazione anche sul bottone "chiuso" della ComboBox
         bookComboBox.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(Book book, boolean empty) {
@@ -91,6 +147,10 @@ public class RegisterLoanController {
         });
     }
 
+    /* ============================================================
+                         CALLBACK REGISTRAZIONE
+       ============================================================ */
+
     /**
      * Permette al chiamante (LoansListController) di registrare una callback
      * che verrà eseguita dopo la registrazione corretta del prestito.
@@ -98,6 +158,10 @@ public class RegisterLoanController {
     public void setOnLoanRegisteredCallback(Runnable callback) {
         this.onLoanRegisteredCallback = callback;
     }
+
+    /* ============================================================
+                           CONFERMA PRESTITO
+       ============================================================ */
 
     /**
      * @brief Conferma la registrazione del prestito.
@@ -107,39 +171,50 @@ public class RegisterLoanController {
     @FXML
     private void confirmLoan(ActionEvent event) {
         try {
-            String userCode = safeTrim(userCodeField.getText());
-            LocalDate due   = dueDatePicker.getValue();
-            Book selectedBook = bookComboBox.getValue();
+            User selectedUser   = userComboBox.getValue();
+            Book selectedBook   = bookComboBox.getValue();
+            LocalDate due       = dueDatePicker.getValue();
 
-            // Controlli di base sui campi
-            if (userCode.isEmpty() || due == null || selectedBook == null) {
-                showError("Compila tutti i campi (matricola utente, libro, data di restituzione).");
+            // ---- Controlli base sui campi della form ----
+            if (selectedUser == null || selectedBook == null || due == null) {
+                showError("Compila tutti i campi (utente, libro, data di restituzione).");
                 return;
             }
 
+            // (Opzionale) Controllo minimo di coerenza sulla data:
+            // se la data è nel passato, probabilmente è un errore di inserimento.
+            if (due.isBefore(LocalDate.now())) {
+                showError("La data di restituzione prevista non può essere nel passato.");
+                return;
+            }
+
+            // Recupero archivio corrente per sicurezza/coerenza
             LibraryArchive archive = archiveService.getLibraryArchive();
             if (archive == null) {
                 showError("Archivio non disponibile. Impossibile registrare il prestito.");
                 return;
             }
 
-            // Recupero utente dall'archivio
-            User user = archive.findUserByCode(userCode);
+            // Verifico che utente e libro siano ancora presenti in archivio
+            User user = archive.findUserByCode(selectedUser.getCode());
             if (user == null) {
-                showError("Utente non trovato. Controlla la matricola inserita.");
+                showError("L'utente selezionato non è più presente in archivio.");
                 return;
             }
 
-            // Il libro è già stato scelto dalla ComboBox → nessuna ricerca per ISBN
-            Book book = selectedBook;
+            Book book = archive.findBookByIsbn(selectedBook.getIsbn());
+            if (book == null) {
+                showError("Il libro selezionato non è più presente in archivio.");
+                return;
+            }
 
-            // Delego la logica di business a LoanService
+            // ---- Logica di business delegata al servizio ----
             Loan loan = loanService.registerLoan(user, book, due);
 
             showInfo("Prestito registrato correttamente.\nID prestito: "
                     + loan.getLoanId());
 
-            // Notifica verso la lista prestiti
+            // Notifica verso la lista prestiti (se il chiamante ha registrato la callback)
             if (onLoanRegisteredCallback != null) {
                 onLoanRegisteredCallback.run();
             }
@@ -151,7 +226,8 @@ public class RegisterLoanController {
                  NoAvailableCopiesException |
                  MaxLoansReachedException ex) {
 
-            // Errori di business (vincoli violati) → messaggio chiaro all'utente
+            // Errori controllati di dominio (vincoli violati):
+            // messaggio chiaro e specifico all'utente.
             showError(ex.getMessage());
 
         } catch (RuntimeException ex) {
@@ -162,6 +238,10 @@ public class RegisterLoanController {
             ex.printStackTrace();
         }
     }
+
+    /* ============================================================
+                           ANNULLA / CHIUDI
+       ============================================================ */
 
     /**
      * @brief Annulla l'operazione e chiude la finestra.
@@ -177,10 +257,6 @@ public class RegisterLoanController {
         Stage stage = (Stage) ((Node) event.getSource())
                 .getScene().getWindow();
         stage.close();
-    }
-
-    private String safeTrim(String s) {
-        return s == null ? "" : s.trim();
     }
 
     private void showError(String message) {
