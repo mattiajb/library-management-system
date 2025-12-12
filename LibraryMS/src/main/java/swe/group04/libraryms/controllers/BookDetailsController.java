@@ -17,6 +17,8 @@ import swe.group04.libraryms.exceptions.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import javafx.scene.control.ButtonType;
 
 public class BookDetailsController {
 
@@ -83,10 +85,7 @@ public class BookDetailsController {
             // --- Raccolta dati aggiornati ---
             String newTitle = titleField.getText().trim();
             String newAuthorRaw = authorField.getText().trim();
-            List<String> newAuthors = Arrays.stream(newAuthorRaw.split(","))
-                    .map(String::trim)
-                    .filter(s -> !s.isEmpty())
-                    .toList();
+            List<String> newAuthors = Arrays.stream(newAuthorRaw.split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
 
             int newYear = Integer.parseInt(yearField.getText().trim());
 
@@ -155,37 +154,54 @@ public class BookDetailsController {
                         ELIMINAZIONE LIBRO
        ============================================================ */
 
-    @FXML
-    private void deleteBook(ActionEvent event) {
+@FXML
+private void deleteBook(ActionEvent event) {
 
-        if (book == null) return;
+    if (book == null) return;
 
-        try {
-            bookService.removeBook(book);
+    // 1) Dialog di conferma
+    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+    confirm.setTitle("Conferma eliminazione");
+    confirm.setHeaderText("Vuoi davvero eliminare questo libro?");
+    confirm.setContentText("Titolo: " + book.getTitle() + "\n" + "ISBN: " + book.getIsbn() + "\n\n" + "L'operazione non può essere annullata.");
 
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setHeaderText("Libro eliminato");
-            alert.setContentText("Il libro è stato rimosso dal catalogo.");
-            alert.showAndWait();
+    Optional<ButtonType> result = confirm.showAndWait();
 
-            closeWindow(event);
-
-        } catch (UserHasActiveLoanException ex) {
-
-            Alert alert = new Alert(Alert.AlertType.WARNING);
-            alert.setHeaderText("Impossibile eliminare il libro");
-            alert.setContentText(ex.getMessage());
-            alert.showAndWait();
-
-        } catch (RuntimeException ex) {
-
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("Errore imprevisto");
-            alert.setContentText("Impossibile eliminare il libro.");
-            alert.showAndWait();
-            ex.printStackTrace();
-        }
+    // Se l'utente NON preme OK, annullo l'operazione
+    if (result.isEmpty() || result.get() != ButtonType.OK) {
+        return;
     }
+
+    // 2) Se l'utente ha confermato, procedo con l'eliminazione
+    try {
+        bookService.removeBook(book);
+
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Libro eliminato");
+        alert.setHeaderText("Libro eliminato");
+        alert.setContentText("Il libro è stato rimosso dal catalogo.");
+        alert.showAndWait();
+
+        closeWindow(event);
+
+    } catch (UserHasActiveLoanException ex) {
+
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Impossibile eliminare il libro");
+        alert.setHeaderText("Impossibile eliminare il libro");
+        alert.setContentText(ex.getMessage());
+        alert.showAndWait();
+
+    } catch (RuntimeException ex) {
+
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Errore imprevisto");
+        alert.setHeaderText("Errore imprevisto");
+        alert.setContentText("Impossibile eliminare il libro.");
+        alert.showAndWait();
+        ex.printStackTrace();
+    }
+}
 
 
     /* ============================================================
