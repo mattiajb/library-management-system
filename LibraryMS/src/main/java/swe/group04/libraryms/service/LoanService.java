@@ -2,10 +2,15 @@
  * @file LoanService.java
  * @brief Servizio applicativo per la gestione dei prestiti.
  *
- * Questa classe incapsula la logica di business relativa ai prestiti:
- * - registrazione di nuovi prestiti
- * - registrazione delle restituzioni
- * - interrogazione e filtraggio dei prestiti attivi
+ * Incapsula la logica di business relativa ai prestiti:
+ * - registrazione di nuovi prestiti;
+ * - registrazione delle restituzioni;
+ * - interrogazione e filtraggio dei prestiti attivi;
+ * - ordinamento dei prestiti per data di scadenza;
+ * - verifica dello stato di ritardo.
+ *
+ * Il servizio delega l’accesso e la persistenza dell’archivio
+ * a LibraryArchiveService.
  */
 package swe.group04.libraryms.service;
 
@@ -23,20 +28,35 @@ import swe.group04.libraryms.models.User;
 /**
  * @brief Implementa la logica di alto livello per la gestione dei prestiti.
  *
- * Utilizza l'archivio centrale della biblioteca e, se necessario,
- * i servizi di persistenza per mantenere allineato lo stato dei prestiti.
+ * Applica vincoli e regole di business sui prestiti, operando sull’istanza
+ * corrente di LibraryArchive fornita da LibraryArchiveService.
+ *
+ * @note Le operazioni che modificano lo stato (registrazione prestito/restituzione)
+ *       eseguono persistenza immediata tramite persistChanges().
  */
 public class LoanService {
 
+    /** Servizio per l'accesso e la persistenza dell'archivio. */
     private final LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
 
-    // Comparatore per data di restituzione prevista
+    /**
+     * @brief Comparatore per ordinare i prestiti per data di scadenza (dueDate).
+     *
+     * Le scadenze nulle sono poste in fondo (nullsLast).
+     */
     private static final Comparator<Loan> BY_DUEDATE_COMPARATOR =
             Comparator.comparing(Loan::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()));
 
 
     /**
-     * Costruttore utilizzato dal ServiceLocator.
+     * @brief Costruttore del servizio.
+     *
+     * @param libraryArchiveService Servizio che fornisce accesso all'archivio e alla persistenza.
+     *
+     * @pre  libraryArchiveService != null
+     * @post this.libraryArchiveService == libraryArchiveService
+     *
+     * @throws IllegalArgumentException Se libraryArchiveService è nullo.
      */
     public LoanService(LibraryArchiveService libraryArchiveService) {
         if (libraryArchiveService == null) {
@@ -45,7 +65,11 @@ public class LoanService {
         this.libraryArchiveService = libraryArchiveService;
     }
 
-    /** Helper: accede sempre all'archivio aggiornato */
+    /**
+     * @brief Helper per ottenere l’archivio corrente.
+     *
+     * @return Istanza corrente di LibraryArchive gestita da LibraryArchiveService.
+     */
     private LibraryArchive getArchive() {
         return libraryArchiveService.getLibraryArchive();
     }
@@ -57,20 +81,30 @@ public class LoanService {
     /**
      * @brief Registra un nuovo prestito.
      *
-     * Vincoli applicati:
-     *  - user != null, book != null, dueDate != null,
-     *  - il libro deve avere copie disponibili,
-     *  - l'utente deve avere meno di 3 prestiti attivi,
-     *  - la data di scadenza non può essere precedente alla data corrente.
+     * - crea un nuovo Loan nell'archivio tramite getArchive().addLoan(...);
+     * - decrementa le copie disponibili del libro (book.decrementAvailableCopies());
+     * - persiste l'archivio aggiornato tramite persistChanges().
+     *
+     * @param user Utente che richiede il prestito.
+     * @param book Libro da prestare.
+     * @param dueDate Data di restituzione prevista.
+     *
+     * @pre  libraryArchiveService != null
+     *
+     * @post Il prestito è presente nell'archivio e le copie disponibili del libro risultano decrementate,
+     *       in assenza di eccezioni.
      *
      * @return Il prestito creato.
+     *
+     * @throws MandatoryFieldException     Se user/book/dueDate sono null, oppure se dueDate è precedente a oggi.
+     * @throws NoAvailableCopiesException  Se il libro non ha copie disponibili.
+     * @throws MaxLoansReachedException    Se l'utente ha già raggiunto il limite di 3 prestiti attivi.
+     * @throws RuntimeException            Se la persistenza fallisce (wrapping di IOException).
      */
     public Loan registerLoan(User user, Book book, LocalDate dueDate)
             throws MandatoryFieldException,
             NoAvailableCopiesException,
             MaxLoansReachedException {
-
-        /* --- Controlli di base (campi obbligatori) --- */
 
         if (user == null) {
             throw new MandatoryFieldException("Utente non valido.");
@@ -82,14 +116,12 @@ public class LoanService {
             throw new MandatoryFieldException("La data di restituzione prevista è obbligatoria.");
         }
 
-        /* --- Verifica disponibilità copie --- */
-
+        //  Verifica disponibilità copie
         if (!book.hasAvailableCopies()) {
             throw new NoAvailableCopiesException("Non ci sono copie disponibili per questo libro.");
         }
 
-        /* --- Verifica limite massimo prestiti attivi per utente --- */
-
+        //  Verifica limite massimo prestiti attivi per utente
         int activeLoans = 0;
         List<Loan> loansByUser = getArchive().findLoansByUser(user);
         for(Loan loan : loansByUser) {
@@ -100,24 +132,20 @@ public class LoanService {
         if (activeLoans >= 3) {
             throw new MaxLoansReachedException("L'utente ha già raggiunto il limite di 3 prestiti attivi.");
         }
-
-        /* --- Verifica correttezza data di scadenza --- */
-
+        
+        //  Verifica correttezza data di scadenza
         if (dueDate.isBefore(LocalDate.now())) {
             throw new MandatoryFieldException(
                     "La data di restituzione non può essere precedente alla data odierna.");
         }
 
-        /* --- Creazione effettiva del prestito --- */
-
+        //  Creazione effettiva del prestito
         Loan loan = getArchive().addLoan(user, book, dueDate);
 
-        /* --- Aggiornamento copie disponibili del libro --- */
-
+        //  Aggiornamento copie disponibili del libro
         book.decrementAvailableCopies();
 
-        /* --- Persistenza --- */
-
+        //  Persistenza
         persistChanges();
 
         return loan;
@@ -131,14 +159,20 @@ public class LoanService {
     /**
      * @brief Registra la restituzione del libro per un prestito.
      *
-     * Effetti:
-     *  - imposta la returnDate del prestito,
-     *  - incrementa le copie disponibili del libro,
-     *  - salva l'archivio aggiornato.
+     * - imposta la returnDate del prestito a LocalDate.now();
+     * - imposta lo stato del prestito a concluso (loan.setStatus(false));
+     * - incrementa le copie disponibili del libro associato, se presente;
+     * - persiste l'archivio aggiornato tramite persistChanges().
      *
-     * Vincoli:
-     *  - il prestito deve essere attivo,
-     *  - non deve essere già restituito.
+     * @param loan Prestito da chiudere (restituire).
+     *
+     * @pre  libraryArchiveService != null
+     *
+     * @post Il prestito risulta chiuso, con returnDate impostata, e le copie disponibili del libro incrementate,
+     *       in assenza di eccezioni.
+     *
+     * @throws MandatoryFieldException Se loan è nullo oppure se il prestito risulta già chiuso.
+     * @throws RuntimeException        Se la persistenza fallisce (wrapping di IOException).
      */
     public void returnLoan(Loan loan) {
         if (loan == null) {
@@ -149,23 +183,19 @@ public class LoanService {
             throw new MandatoryFieldException("Il prestito risulta già chiuso.");
         }
 
-        /* --- Aggiorna data restituzione --- */
-
+        //  Aggiorna data restituzione
         loan.setReturnDate(LocalDate.now());
 
-        /* --- Aggiorna stato --- */
-
+        //  Aggiorna stato
         loan.setStatus(false);
 
-        /* --- Incrementa copie del libro --- */
-
+        //  Incrementa copie del libro
         Book book = loan.getBook();
         if (book != null) {
             book.incrementAvailableCopies();
         }
 
-        /* --- Persistenza --- */
-
+        //  Persistenza
         persistChanges();
     }
 
@@ -176,10 +206,13 @@ public class LoanService {
     /**
      * @brief Restituisce tutti i prestiti attivi.
      *
-     * @pre  libraryArchive != null
+     * Un prestito è considerato attivo se loan.isActive() == true.
+     * L’elenco restituito viene ordinato per dueDate tramite BY_DUEDATE_COMPARATOR.
      *
-     * @return Lista dei prestiti attualmente attivi (può essere vuota),
-     *         oppure null finché il metodo non viene implementato.
+     * @pre  libraryArchiveService != null
+     * @post true
+     *
+     * @return Lista dei prestiti attualmente attivi (può essere vuota, mai null).
      */
     public List<Loan> getActiveLoan() {
 
@@ -196,11 +229,18 @@ public class LoanService {
     }
 
     /**
-     * @brief Indica se un prestito è in ritardo.
+     * @brief Determina se un prestito è in ritardo.
      *
      * Un prestito è in ritardo se:
-     *  - è ancora attivo,
-     *  - la data dovuta è precedente a oggi.
+     * - è attivo (loan.isActive() == true);
+     * - la data di scadenza (dueDate) è precedente alla data corrente.
+     *
+     * @param loan Prestito da valutare.
+     *
+     * @pre  true
+     * @post true
+     *
+     * @return true se il prestito è in ritardo, false altrimenti (anche per input null o non attivi).
      */
     public boolean isLate(Loan loan) {
 
@@ -213,6 +253,14 @@ public class LoanService {
 
     /**
      * @brief Restituisce tutti i prestiti ordinati per data di scadenza.
+     *
+     * L’ordinamento avviene su una copia della lista ottenuta dall’archivio,
+     * quindi non modifica l’ordine interno mantenuto da LibraryArchive.
+     *
+     * @pre  libraryArchiveService != null
+     * @post true
+     *
+     * @return Lista di prestiti ordinata per dueDate (può essere vuota, mai null).
      */
     public List<Loan> getLoansSortedByDueDate() {
         List<Loan> list = new ArrayList<>(getArchive().getLoans());
@@ -225,7 +273,12 @@ public class LoanService {
        ================================================================ */
 
     /**
-     * Salva l'archivio aggiornato tramite LibraryArchiveService.
+     * @brief Persiste le modifiche dell'archivio tramite LibraryArchiveService.
+     *
+     * Converte eventuali IOException in RuntimeException, poiché un fallimento
+     * della persistenza rappresenta un errore applicativo.
+     *
+     * @throws RuntimeException Se il salvataggio fallisce (wrapping di IOException).
      */
     private void persistChanges() {
         try {
