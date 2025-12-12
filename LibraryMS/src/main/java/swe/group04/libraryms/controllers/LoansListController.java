@@ -17,6 +17,7 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 import swe.group04.libraryms.models.Loan;
@@ -96,11 +97,28 @@ public class LoansListController {
             Loan l = cell.getValue();
             String status;
             if (l.isActive()) {
-                status = loanService.isLate(l) ? "Attivo (in ritardo)" : "Attivo";
+                status = loanService.isLate(l) ? "In ritardo" : "Attivo";
             } else {
                 status = "Concluso";
             }
             return new SimpleStringProperty(status);
+        });
+
+        // Evidenziazione grafica delle righe con prestito scaduto
+        loanTable.setRowFactory(tv -> new TableRow<Loan>() {
+            @Override
+            protected void updateItem(Loan loan, boolean empty) {
+                super.updateItem(loan, empty);
+
+                // Prima tolgo sempre la classe, per sicurezza
+                getStyleClass().remove("overdue-row");
+
+                if (!empty && loan != null && isOverdue(loan)) {
+                    if (!getStyleClass().contains("overdue-row")) {
+                        getStyleClass().add("overdue-row");
+                    }
+                }
+            }
         });
 
         // Carica dati iniziali
@@ -112,6 +130,19 @@ public class LoansListController {
         loanFilterChoiceBox.getSelectionModel()
                 .selectedItemProperty()
                 .addListener((obs, oldVal, newVal) -> applyFilter(newVal));
+    }
+
+    /**
+     * Un prestito è considerato "overdue" se:
+     *  - è attivo
+     *  - il LoanService lo considera in ritardo (isLate == true)
+     */
+    private boolean isOverdue(Loan loan) {
+        if (loan == null) {
+            return false;
+        }
+        // Uso la logica di dominio già presente nel service
+        return loan.isActive() && loanService.isLate(loan);
     }
 
     /* ============================================================================

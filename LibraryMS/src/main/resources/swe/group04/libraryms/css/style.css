@@ -194,3 +194,17 @@
     -fx-font-weight: bold;
     -fx-text-fill: #2c3e50;
 }
+
+/* ================================
+   LOANS LIST - OVERDUE ROW STYLE
+   ================================ */
+
+/* Riga di prestito scaduto */
+.table-row-cell.overdue-row {
+    -fx-background-color: #ffe6e6; /* rosa chiaro di warning */
+}
+
+/* Riga scaduta selezionata (più intensa) */
+.table-row-cell.overdue-row:selected {
+    -fx-background-color: #ffb3b3;
+}
