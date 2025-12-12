@@ -3,7 +3,6 @@ package swe.group04.libraryms.controllers;
 import java.time.LocalDate;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -12,7 +11,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListCell;
-import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import swe.group04.libraryms.exceptions.MandatoryFieldException;
@@ -40,7 +38,6 @@ public class RegisterLoanController {
 
     @FXML private TextField userCodeField;
     @FXML private ComboBox<Book> bookComboBox;
-    @FXML private TextField bookSearchField;
     @FXML private DatePicker dueDatePicker;
     @FXML private Button saveLoanButton;
     @FXML private Button cancelButton;
@@ -53,9 +50,6 @@ public class RegisterLoanController {
 
     /** Callback opzionale per aggiornare la lista prestiti dopo l'inserimento. */
     private Runnable onLoanRegisteredCallback;
-
-    /** Lista completa dei libri da cui filtrare la ComboBox */
-    private ObservableList<Book> allBooks = FXCollections.observableArrayList();
 
     /* ============================ INITIALIZE ============================ */
 

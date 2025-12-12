@@ -65,18 +65,6 @@
 
                         <!-- Libro (ISBN) -->
 
-                        <!-- Ricerca libro -->
-                        <Label styleClass="form-label"
-                               text="Cerca libro:"
-                               GridPane.columnIndex="0"
-                               GridPane.rowIndex="1" />
-
-                        <TextField fx:id="bookSearchField"
-                                   promptText="Cerca per ISBN o titolo"
-                                   focusTraversable="false"
-                                   GridPane.columnIndex="1"
-                                   GridPane.rowIndex="1" />
-
                         <!-- Libro (ISBN + titolo in tendina) -->
                         <Label styleClass="form-label"
                                text="Libro:"
