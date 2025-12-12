@@ -1,18 +1,15 @@
 /**
  * @file ArchiveFileService.java
- * @brief Gestisce il caricamento e il salvataggio dell'archivio della biblioteca.
+ * @brief Servizio di persistenza per l'archivio della biblioteca.
  *
- * Questa classe rappresenta il componente responsabile della persistenza
- * dell'archivio principale del sistema. Si appoggia a FileService per
- * eseguire le operazioni di I/O a basso livello.
+ * Questa classe appartiene al livello di persistenza dell'applicazione
+ * ed è responsabile della serializzazione e deserializzazione
+ * dell'oggetto.
+ * Il servizio delega le operazioni di I/O a basso livello al FileService,
+ * mantenendo separata la logica di accesso ai file dalla logica di dominio.
  *
- * Responsabilità principali:
- * - Caricamento dell'archivio al lancio dell'applicazione.
- * - Salvataggio dell'archivio dopo le modifiche rilevanti.
- *
- * Nota: questa classe non verifica la validità del percorso del file
- * né la configurazione di FileService; si assume che il chiamante
- * li imposti correttamente prima dell'uso.
+ * @note Questa classe non esegue validazioni di business
+ *       sull'archivio caricato o salvato.
  */
 package swe.group04.libraryms.persistence;
 
@@ -20,18 +17,27 @@ import java.io.IOException;
 import swe.group04.libraryms.models.LibraryArchive;
 
 /**
- * @brief Servizio per la persistenza dell'archivio della biblioteca.
+ * @brief Implementa la persistenza dell'archivio tramite file.
  *
- * Permette di configurare il percorso del file e il servizio di I/O
- * da utilizzare per serializzare e deserializzare un oggetto LibraryArchive.
  */
 public class ArchiveFileService {
-    
+
+    /** Percorso del file contenente l'archivio serializzato */
     private String archiveFilePath;
+
+    /** Servizio di I/O per la gestione dei file */
     private FileService fileService;
 
-    public ArchiveFileService(String archiveFilePath,  FileService fileService)
-    {
+    /**
+     * @brief Costruisce un servizio di persistenza per l'archivio.
+     *
+     * @param archiveFilePath Percorso del file dell'archivio.
+     * @param fileService     Servizio di I/O da utilizzare.
+     *
+     * @pre  archiveFilePath != null
+     * @pre  fileService != null
+     */
+    public ArchiveFileService(String archiveFilePath, FileService fileService) {
         this.archiveFilePath = archiveFilePath;
         this.fileService = fileService;
     }
@@ -39,82 +45,77 @@ public class ArchiveFileService {
     /**
      * @brief Imposta il percorso del file dell'archivio.
      *
-     * @pre  path != null
-     * @post getArchiveFilePath().equals(path)
+     * @param path Nuovo percorso del file.
      *
-     * @param path Nuovo percorso del file dell'archivio.
+     * @pre  path != null
+     * @post this.archiveFilePath == path
      */
     public void setArchiveFilePath(String path) {
         this.archiveFilePath = path;
     }
-    
+
     /**
      * @brief Restituisce il percorso del file dell'archivio.
      *
-     * @pre  Nessuna.
-     * @post true   // non modifica lo stato dell'oggetto
-     *
-     * @return Il percorso attualmente configurato, oppure null se non impostato.
+     * @return Percorso del file attualmente configurato.
      */
-    public String getArchiveFilePath(){
+    public String getArchiveFilePath() {
         return this.archiveFilePath;
     }
-    
+
     /**
-     * @brief Imposta il servizio di I/O utilizzato per leggere/scrivere l'archivio.
+     * @brief Imposta il servizio di I/O utilizzato.
+     *
+     * @param fileService Servizio di I/O.
      *
      * @pre  fileService != null
      * @post this.fileService == fileService
-     *
-     * @param fileService Oggetto responsabile delle operazioni su file.
      */
     public void setFileService(FileService fileService) {
         this.fileService = fileService;
     }
-    
+
     /**
-     * @brief Carica l'archivio della biblioteca dal file configurato.
+     * @brief Carica l'archivio della biblioteca da file.
+     *
+     * Il metodo legge il contenuto del file configurato e
+     * verifica che l'oggetto deserializzato sia di tipo LibraryArchive.
+     *
+     * @return Archivio della biblioteca caricato da file.
      *
      * @pre  archiveFilePath != null
      * @pre  fileService != null
-     * @pre  Il file indicato da archiveFilePath esiste ed è leggibile.
      *
-     * @post true   // il metodo non modifica lo stato interno dell'oggetto
-     *
-     * @return L'archivio caricato da file.
-     *
-     * @throws IOException Se la lettura dal file fallisce.
-     *
-     * @note L'implementazione attuale è un segnaposto e restituisce null.
-     *       La logica di caricamento dovrà essere completata in fase di sviluppo.
+     * @throws IOException Se:
+     *         - la lettura del file fallisce;
+     *         - il contenuto del file non rappresenta un LibraryArchive valido.
      */
     public LibraryArchive loadArchive() throws IOException {
+
         Object data = fileService.readFromFile(archiveFilePath);
 
-        // Controllo del tipo di dato letto da file
-        if (!(data instanceof LibraryArchive)){ throw new IOException("Il contenuto del file non è valido. "); }
+        if (!(data instanceof LibraryArchive)) {
+            throw new IOException("Il contenuto del file non rappresenta un archivio valido.");
+        }
 
         return (LibraryArchive) data;
     }
-    
+
     /**
      * @brief Salva l'archivio corrente su file.
+     *
+     * Serializza l'oggetto LibraryArchive e lo scrive
+     * nel file configurato.
+     *
+     * @param archive Archivio da salvare.
      *
      * @pre  archive != null
      * @pre  archiveFilePath != null
      * @pre  fileService != null
      *
-     * @post true   // l'effetto è esterno: scrittura su file
-     *
-     * @param archive Oggetto contenente l'archivio da salvare.
-     *
-     * @throws IOException Se si verifica un errore durante la scrittura.
-     *
-     * @note Il metodo è attualmente vuoto: la logica di salvataggio
-     *       verrà implementata successivamente.
+     * @throws IOException Se la scrittura su file fallisce.
      */
-    public void saveArchive(LibraryArchive archive) throws IOException{
-        fileService.writeToFile(archiveFilePath, archive); // Parametri passati: destinazione, archivio
+    public void saveArchive(LibraryArchive archive) throws IOException {
+        fileService.writeToFile(archiveFilePath, archive);
     }
 }
-
