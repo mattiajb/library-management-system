@@ -385,6 +385,10 @@ public class BookService {
         }
     }
 
+    /* ---------------------------------------------------------------------- */
+    /*                Metodi di supporto e persistenza                         */
+    /* ---------------------------------------------------------------------- */
+    
     /**
      * @brief Persiste le modifiche dell'archivio tramite LibraryArchiveService.
      *

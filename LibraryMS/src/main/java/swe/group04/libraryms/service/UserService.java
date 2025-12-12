@@ -2,10 +2,14 @@
  * @file UserService.java
  * @brief Servizio applicativo per la gestione degli utenti.
  *
- * Questa classe incapsula la logica di business relativa agli utenti:
- * - registrazione e aggiornamento dei dati utente
- * - rimozione dal sistema
- * - ricerche e ordinamenti sulla lista degli utenti
+ * Incapsula la logica di business relativa agli utenti:
+ * - inserimento, aggiornamento, rimozione;
+ * - validazione dei campi obbligatori e del formato email;
+ * - vincoli di unicità della matricola;
+ * - ricerche e ordinamenti sulla lista degli utenti;
+ * - persistenza delle modifiche tramite LibraryArchiveService.
+ *
+ * @note Il servizio opera sull'archivio corrente fornito da LibraryArchiveService.
  */
 package swe.group04.libraryms.service;
 
@@ -20,18 +24,33 @@ import swe.group04.libraryms.models.*;
 /**
  * @brief Implementa la logica di alto livello per la gestione degli utenti.
  *
- * Utilizza l'archivio centrale della biblioteca e, se necessario,
- * i servizi di persistenza per mantenere allineato lo stato degli utenti.
+ * Coordina l'accesso a LibraryArchive e applica controlli/validazioni
+ * prima di rendere persistenti le modifiche.
  */
 public class UserService {
 
+    /** Servizio per l'accesso e la persistenza dell'archivio. */
     private final LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
 
-    // Comparatore per cognome
-    private static final Comparator<User> BY_LASTNAME_COMPARATOR = Comparator.comparing(user -> user.getLastName() == null ? "" : user.getLastName().toLowerCase());
+    /**
+     * @brief Comparatore case-insensitive per ordinare gli utenti per cognome.
+     *
+     * Se il cognome è null viene considerata la stringa vuota.
+     */
+    private static final Comparator<User> BY_LASTNAME_COMPARATOR =
+            Comparator.comparing(user -> user.getLastName() == null ? "" : user.getLastName().toLowerCase());
 
     /**
-     * Costruttore usato dal ServiceLocator.
+     * @brief Costruttore del servizio.
+     *
+     * Tipicamente istanziato dal ServiceLocator.
+     *
+     * @param libraryArchiveService Servizio che fornisce accesso all'archivio e alla persistenza.
+     *
+     * @pre  libraryArchiveService != null
+     * @post this.libraryArchiveService == libraryArchiveService
+     *
+     * @throws IllegalArgumentException Se libraryArchiveService è nullo.
      */
     public UserService(LibraryArchiveService libraryArchiveService) {
 
@@ -43,7 +62,9 @@ public class UserService {
     }
 
     /**
-     * Restituisce sempre l’archivio aggiornato.
+     * @brief Restituisce l'archivio corrente gestito dal LibraryArchiveService.
+     *
+     * @return Istanza corrente di LibraryArchive.
      */
     private LibraryArchive getArchive() {
         return libraryArchiveService.getLibraryArchive();
@@ -52,18 +73,22 @@ public class UserService {
     /**
      * @brief Registra un nuovo utente nel sistema.
      *
-     * Esegue i controlli sui campi obbligatori e sulla validità dell'email.
-     *
-     * @pre  user != null
-     * @pre  libraryArchive != null
+     * - valida campi obbligatori;
+     * - valida formato email;
+     * - verifica unicità della matricola in fase di inserimento;
+     * - aggiunge l'utente all'archivio;
+     * - persiste le modifiche.
      *
      * @param user Utente da aggiungere.
      *
-     * @throws MandatoryFieldException Se uno o più campi obbligatori non sono validi.
-     * @throws InvalidEmailException   Se l'indirizzo email non rispetta il formato atteso
-     *                                 o viola vincoli di unicità.
+     * @pre  user != null
+     * @pre  libraryArchiveService != null
      *
-     * @note Metodo ancora da implementare: il corpo è vuoto.
+     * @post L'utente risulta presente nell'archivio (in assenza di eccezioni).
+     *
+     * @throws MandatoryFieldException Se campi obbligatori non sono validi o la matricola è duplicata.
+     * @throws InvalidEmailException   Se l'email è vuota o non rispetta il formato accettato.
+     * @throws RuntimeException        Se il salvataggio dell'archivio fallisce (wrapping di IOException).
      */
     public void addUser(User user) throws MandatoryFieldException, InvalidEmailException{
         validateMandatoryFields(user);
@@ -73,20 +98,25 @@ public class UserService {
         getArchive().addUser(user);
         persistChanges();
     }
-    
+
     /**
      * @brief Aggiorna i dati di un utente esistente.
      *
-     * @pre  user != null
-     * @pre  libraryArchive != null
-     * @pre  L'utente esiste già nell'archivio.
+     * - valida campi obbligatori;
+     * - valida email;
+     * - verifica che non esista un altro utente con la stessa matricola;
+     * - persiste le modifiche.
      *
      * @param user Utente con i dati aggiornati.
      *
-     * @throws MandatoryFieldException Se i nuovi dati violano vincoli di obbligatorietà.
-     * @throws InvalidEmailException   Se l'email aggiornata non è valida o crea duplicati.
+     * @pre  user != null
+     * @pre  libraryArchiveService != null
      *
-     * @note Metodo ancora da implementare: il corpo è vuoto.
+     * @post Le modifiche risultano persistite (in assenza di eccezioni).
+     *
+     * @throws MandatoryFieldException Se campi obbligatori non sono validi o la matricola collide con un altro utente.
+     * @throws InvalidEmailException   Se l'email è vuota o non rispetta il formato accettato.
+     * @throws RuntimeException        Se il salvataggio dell'archivio fallisce (wrapping di IOException).
      */
     public void updateUser(User user) throws MandatoryFieldException, InvalidEmailException{
         validateMandatoryFields(user);
@@ -96,20 +126,25 @@ public class UserService {
         // L'istanza user è già presente nell'archivio → basta modificarla
         persistChanges();
     }
-    
+
     /**
      * @brief Rimuove un utente dal sistema.
      *
-     * Prima della rimozione possono essere verificati eventuali prestiti attivi.
-     *
-     * @pre  user != null
-     * @pre  libraryArchive != null
+     * - verifica precondizioni;
+     * - controlla prestiti associati all'utente e ne impedisce la rimozione se attivi;
+     * - rimuove l'utente dall'archivio;
+     * - persiste le modifiche.
      *
      * @param user Utente da rimuovere.
      *
-     * @throws UserHasActiveLoanException Se l'utente ha ancora prestiti attivi.
+     * @pre  user != null
+     * @pre  libraryArchiveService != null
      *
-     * @note Metodo ancora da implementare: il corpo è vuoto.
+     * @post L'utente non è più presente nell'archivio (in assenza di eccezioni).
+     *
+     * @throws IllegalArgumentException     Se user è nullo.
+     * @throws UserHasActiveLoanException   Se l'utente ha prestiti attivi.
+     * @throws RuntimeException             Se il salvataggio dell'archivio fallisce (wrapping di IOException).
      */
     public void removeUser(User user) throws UserHasActiveLoanException{
         if (user == null) {
@@ -128,35 +163,45 @@ public class UserService {
         getArchive().removeUser(user);
         persistChanges();
     }
-    
+
     /**
      * @brief Restituisce la lista degli utenti ordinata per cognome.
      *
-     * @pre  libraryArchive != null
+     * L'ordinamento è effettuato su una copia della lista restituita dall'archivio.
      *
-     * @return Lista di utenti ordinata alfabeticamente per cognome
-     *         (può essere vuota), oppure null finché il metodo
-     *         non viene implementato.
+     * @pre  libraryArchiveService != null
+     * @post true
+     *
+     * @return Lista di utenti ordinata per cognome (mai null).
      */
     public List<User> getUsersSortedByLastName() {
         List<User> list = new ArrayList<>(getArchive().getUsers());
         list.sort(BY_LASTNAME_COMPARATOR);
         return list;
     }
-    
+
     /**
-     * @brief Ricerca utenti in base a una stringa di query.
+     * @brief Ricerca utenti nel sistema tramite query testuale.
      *
-     * La query può essere interpretata come parte del nome, cognome,
-     * codice utente o email, a seconda della logica implementata.
+     * La query viene normalizzata in lower-case e confrontata tramite
+     * matching per sottostringa su:
+     * - cognome;
+     * - nome;
+     * - matricola/codice;
+     * - email.
      *
-     * @pre  query != null
-     * @pre  libraryArchive != null
+     * Se la query è vuota (dopo trim), restituisce tutti gli utenti ordinati per cognome.
      *
      * @param query Testo inserito dall'operatore.
      *
-     * @return Sottoinsieme degli utenti che corrispondono ai criteri di ricerca
-     *         (può essere vuoto), oppure null finché il metodo non viene implementato.
+     * @pre  query != null
+     * @pre  libraryArchiveService != null
+     *
+     * @post true
+     *
+     * @return Lista di utenti che soddisfano il criterio di ricerca (mai null).
+     *
+     * @throws IllegalArgumentException Se query è null.
      */
     public List<User> searchUsers(String query) {
         if (query == null) {
@@ -192,6 +237,22 @@ public class UserService {
     /*                    Metodi di validazione interna                        */
     /* ---------------------------------------------------------------------- */
 
+    /**
+     * @brief Verifica la presenza dei campi obbligatori dell'utente.
+     *
+     * Controlla:
+     * - nome non nullo e non vuoto;
+     * - cognome non nullo e non vuoto;
+     * - matricola/codice non nullo e non vuoto;
+     * - email non nulla e non vuota.
+     *
+     * @param user Utente da validare.
+     *
+     * @pre  true
+     * @post true
+     *
+     * @throws MandatoryFieldException Se user è nullo o un campo obbligatorio è mancante.
+     */
     private void validateMandatoryFields(User user) throws MandatoryFieldException {
 
         if (user == null) {
@@ -215,16 +276,41 @@ public class UserService {
         }
     }
 
+    /**
+     * @brief Valida l'indirizzo email dell'utente.
+     *
+     * Regole adottate:
+     * - email non vuota;
+     * - deve rispettare la regex definita dal metodo;
+     * - sono ammessi solo indirizzi che terminano con 'unisa.it' (secondo regex).
+     *
+     * @param email Indirizzo email da validare.
+     *
+     * @pre  true
+     * @post true
+     *
+     * @throws InvalidEmailException Se email è vuota o non rispetta il formato previsto.
+     */
     private void validateEmail(String email) throws InvalidEmailException {
         if (email == null || email.trim().isEmpty()) {
             throw new InvalidEmailException("L'email non può essere vuota.");
         }
-        
+
         if(!email.trim().matches("^[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\\.)*unisa\\.it$")) {
             throw new InvalidEmailException("Email non valida. Sono ammessi solo indirizzi che terminano con 'unisa.it'.");
         }
     }
 
+    /**
+     * @brief Verifica unicità della matricola in fase di inserimento.
+     *
+     * @param code Matricola/codice da verificare.
+     *
+     * @pre  code != null
+     * @post true
+     *
+     * @throws MandatoryFieldException Se esiste già un utente con la stessa matricola.
+     */
     private void validateMatricolaUniquenessOnAdd(String code) throws MandatoryFieldException {
 
         User existing = getArchive().findUserByCode(code);
@@ -234,6 +320,19 @@ public class UserService {
         }
     }
 
+    /**
+     * @brief Verifica unicità della matricola in fase di aggiornamento.
+     *
+     * Consente la stessa matricola solo se appartiene alla stessa istanza utente
+     * (existing == user). Se un altro utente possiede la stessa matricola, solleva eccezione.
+     *
+     * @param user Utente da verificare.
+     *
+     * @pre  user != null
+     * @post true
+     *
+     * @throws MandatoryFieldException Se esiste già un altro utente con la stessa matricola.
+     */
     private void validateMatricolaUniquenessOnUpdate(User user) throws MandatoryFieldException {
 
         User existing = getArchive().findUserByCode(user.getCode());
@@ -247,14 +346,36 @@ public class UserService {
     /*                Metodi di supporto e persistenza                         */
     /* ---------------------------------------------------------------------- */
 
+    /**
+     * @brief Verifica se un campo contiene la query (case-insensitive).
+     *
+     * @param field Campo testuale su cui effettuare il confronto (può essere null).
+     * @param query Query già normalizzata in lower-case.
+     *
+     * @return true se field contiene query (ignorando maiuscole/minuscole), false altrimenti.
+     */
     private boolean containsIgnoreCase(String field, String query) {
         return field != null && field.toLowerCase().contains(query);
     }
 
+    /**
+     * @brief Verifica se una stringa è nulla o composta solo da spazi.
+     *
+     * @param s Stringa da controllare.
+     * @return true se s è null o blank, false altrimenti.
+     */
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
     }
 
+    /**
+     * @brief Persiste le modifiche dell'archivio tramite LibraryArchiveService.
+     *
+     * Converte eventuali IOException in RuntimeException, poiché la persistenza
+     * fallita rappresenta un errore applicativo.
+     *
+     * @throws RuntimeException Se il salvataggio fallisce (wrapping di IOException).
+     */
     private void persistChanges() {
         try {
             libraryArchiveService.saveArchive(getArchive());
