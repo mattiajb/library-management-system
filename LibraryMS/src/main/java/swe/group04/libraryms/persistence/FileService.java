@@ -1,14 +1,12 @@
 /**
  * @file FileService.java
- * @brief Classe responsabile della gestione delle operazioni generiche di I/O su file.
+ * @brief Classe responsabile delle operazioni di I/O su file tramite serializzazione.
  *
- * Questa classe fornisce metodi per leggere e scrivere oggetti tramite
- * serializzazione, verificare l'esistenza di un file ed eliminarlo.
- * Costituisce il livello più basso dell'accesso al file system
- * e viene utilizzata dagli altri servizi di persistenza.
+ * Fornisce metodi generici per:
+ * - scrivere un oggetto su file (serializzazione);
+ * - leggere un oggetto da file (deserializzazione).
  *
- * L'obiettivo è incapsulare l'interazione diretta con il file system
- * e offrire un'interfaccia semplice e robusta alle componenti che ne fanno uso.
+ * @note non contiene logica di business e non valida la correttezza semantica dei dati.
  */
 package swe.group04.libraryms.persistence;
 
@@ -17,21 +15,22 @@ import java.io.*;
 /**
  * @brief Servizio di utilità per operazioni generiche su file.
  *
- * Fornisce metodi per serializzare e deserializzare oggetti su file.
- * L'implementazione è attualmente un segnaposto e dovrà essere completata
- * in fase di sviluppo.
  */
 public class FileService {
 
     /**
      * @brief Scrive un oggetto su file utilizzando la serializzazione.
      *
-     * @pre path != null
-     *
-     * @post Il file indicato da path contiene una rappresentazione serializzata di data
-     *
      * @param path Percorso del file su cui eseguire la scrittura.
      * @param data Oggetto da serializzare e salvare.
+     *
+     * @pre  path != null
+     * @pre  data != null
+     *
+     * @post Il file indicato da path contiene una rappresentazione serializzata di data.
+     *
+     * @throws IllegalArgumentException Se path è nullo o se data è nullo.
+     * @throws IOException Se si verifica un errore di I/O durante la scrittura.
      */
     public void writeToFile(String path, Object data) throws IOException {
 
@@ -50,17 +49,22 @@ public class FileService {
             oos.writeObject(data);
         }
     }
-    
+
     /**
      * @brief Legge un oggetto da un file tramite deserializzazione.
      *
-     * @pre path != null
-     *
-     * @post true // Il metodo non modifica lo stato interno del file service
-     *
      * @param path Percorso del file da cui leggere.
-     * @return Oggetto deserializzato, oppure null finché il metodo
-     *         non viene effettivamente implementato.
+     *
+     * @pre  path != null
+     *
+     * @return Oggetto deserializzato letto dal file.
+     *
+     * @throws IOException Se si verifica un errore di I/O durante la lettura.
+     * @throws RuntimeException Se la classe dell'oggetto deserializzato non è disponibile
+     *                          (wrapping della ClassNotFoundException).
+     *
+     * @note Se il file non esiste o non è accessibile, viene sollevata IOException
+     *       dalle classi di I/O utilizzate (FileInputStream/ObjectInputStream).
      */
     public Object readFromFile(String path) throws IOException {
 
