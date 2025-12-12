@@ -21,9 +21,7 @@ public class Main extends Application{
 
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(
-                getClass().getResource("/swe/group04/libraryms/view/main.fxml")
-        );
+        Parent root = FXMLLoader.load(getClass().getResource("/swe/group04/libraryms/view/main.fxml"));
         Scene scene = new Scene(root);
         scene.getStylesheets().add(getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
         stage.setScene(scene);
