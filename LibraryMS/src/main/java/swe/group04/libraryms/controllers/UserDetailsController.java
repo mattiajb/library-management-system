@@ -1,10 +1,12 @@
 package swe.group04.libraryms.controllers;
 
+import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -128,10 +130,25 @@ public class UserDetailsController {
 
         if (user == null) return;
 
+        // 1) Dialog di conferma
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Conferma eliminazione");
+        confirm.setHeaderText("Vuoi davvero eliminare questo utente?");
+        confirm.setContentText("Matricola: " + user.getCode() + "\n" + "Nome: " + user.getFirstName() + " " + user.getLastName() + "\n\n" + "L'operazione non può essere annullata.");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+
+        // Se l'utente NON preme OK, annullo l’operazione
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
+        // 2) Se confermato, procedo con l'eliminazione
         try {
             userService.removeUser(user);
 
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Utente eliminato");
             alert.setHeaderText("Utente eliminato");
             alert.setContentText("L’utente è stato rimosso dal sistema.");
             alert.showAndWait();
@@ -141,6 +158,7 @@ public class UserDetailsController {
         } catch (UserHasActiveLoanException ex) {
 
             Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Impossibile eliminare l’utente");
             alert.setHeaderText("Impossibile eliminare l’utente");
             alert.setContentText(ex.getMessage());
             alert.showAndWait();
@@ -148,6 +166,7 @@ public class UserDetailsController {
         } catch (RuntimeException ex) {
 
             Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Errore di sistema");
             alert.setHeaderText("Errore di sistema");
             alert.setContentText("Impossibile eliminare l’utente.");
             alert.showAndWait();
