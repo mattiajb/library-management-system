@@ -2,10 +2,13 @@
  * @file BookService.java
  * @brief Servizio applicativo per la gestione dei libri.
  *
- * Questa classe incapsula la logica di business relativa al catalogo libri:
- * - operazioni CRUD
- * - controlli di validazione sugli input
- * - coordinamento con LibraryArchive e LibraryArchiveService per la persistenza.
+ * Incapsula la logica di business relativa al catalogo libri:
+ * - inserimento, aggiornamento, rimozione;
+ * - validazione dei dati;
+ * - accesso all'archivio corrente tramite LibraryArchiveService;
+ * - persistenza delle modifiche tramite LibraryArchiveService.
+ *
+ * @note Il servizio opera sullo stato dell'archivio restituito da LibraryArchiveService.
  */
 package swe.group04.libraryms.service;
 
@@ -20,14 +23,19 @@ import swe.group04.libraryms.models.*;
 /**
  * @brief Implementa la logica di alto livello per la gestione del catalogo libri.
  *
- * Utilizza l'archivio centrale della biblioteca e il servizio di persistenza
- * per applicare le regole di business sulle operazioni relative ai libri.
+ * Applica vincoli di business sui dati dei libri e coordina
+ * aggiornamenti su LibraryArchive con la persistenza.
  */
 public class BookService {
 
+    /** Servizio per l'accesso e la persistenza dell'archivio. */
     private LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
 
-    // Comparatore Lower-Case
+    /**
+     * @brief Comparatore case-insensitive per ordinare i libri per titolo.
+     *
+     * Se il titolo è null, viene considerata la stringa vuota.
+     */
     private static final Comparator<Book> BY_TITLE_COMPARATOR =
             Comparator.comparing(
                     b -> b.getTitle() == null
@@ -35,9 +43,15 @@ public class BookService {
                             : b.getTitle().toLowerCase()
             );
 
-
     /**
-     * Costruttore usato dal ServiceLocator.
+     * @brief Costruttore del servizio.
+     *
+     * @param libraryArchiveService Servizio che fornisce accesso all'archivio e alla persistenza.
+     *
+     * @pre  libraryArchiveService != null
+     * @post this.libraryArchiveService == libraryArchiveService
+     *
+     * @throws IllegalArgumentException Se libraryArchiveService è nullo.
      */
     public BookService(LibraryArchiveService libraryArchiveService) {
         if (libraryArchiveService == null) {
@@ -46,7 +60,11 @@ public class BookService {
         this.libraryArchiveService = libraryArchiveService;
     }
 
-    /** Comodo helper per avere sempre l'archivio aggiornato. */
+    /**
+     * @brief Restituisce l'archivio corrente gestito dal LibraryArchiveService.
+     *
+     * @return Istanza di LibraryArchive corrente (può dipendere dal ciclo di vita del servizio).
+     */
     private LibraryArchive getArchive() {
         return libraryArchiveService.getLibraryArchive();
     }
@@ -54,20 +72,22 @@ public class BookService {
     /**
      * @brief Registra un nuovo libro nel catalogo.
      *
-     * @pre  book != null
-     * @pre  I campi obbligatori del libro sono valorizzati
-     *       (titolo, autori, ISBN, numero di copie).
-     * @pre  libraryArchive != null
-     *
-     * @post Il libro risulta presente nell'archivio.
+     * - valida i campi obbligatori del libro;
+     * - verifica formato ISBN;
+     * - verifica unicità ISBN nell'archivio;
+     * - aggiunge il libro all'archivio;
+     * - persiste le modifiche.
      *
      * @param book Libro da aggiungere al catalogo.
      *
-     * @throws MandatoryFieldException Se uno o più campi obbligatori non sono validi.
-     * @throws InvalidIsbnException    Se l'ISBN non rispetta il formato atteso
-     *                                 o è già presente nell'archivio.
+     * @pre  book != null
+     * @pre  libraryArchiveService != null
      *
-     * @note Metodo ancora da implementare: il corpo è vuoto.
+     * @post Il libro risulta presente nell'archivio (in assenza di eccezioni).
+     *
+     * @throws MandatoryFieldException Se uno o più campi obbligatori non sono validi.
+     * @throws InvalidIsbnException    Se l'ISBN non rispetta il formato atteso o è già presente.
+     * @throws RuntimeException        Se il salvataggio dell'archivio fallisce (wrapping di IOException).
      */
     public void addBook(Book book) throws MandatoryFieldException, InvalidIsbnException{
         validateBookMandatoryFields(book);
@@ -78,22 +98,24 @@ public class BookService {
 
         persistChanges(); // Persistenza delle modifiche
     }
-    
+
     /**
      * @brief Aggiorna i dati di un libro esistente.
      *
-     * @pre  book != null
-     * @pre  Il libro esiste già nell'archivio.
-     * @pre  libraryArchive != null
-     *
-     * @post I dati del libro nell'archivio riflettono quelli dell'oggetto passato.
+     * - valida i campi obbligatori del libro;
+     * - verifica formato ISBN;
+     * - persiste l'archivio.
      *
      * @param book Libro con i dati aggiornati.
      *
-     * @throws MandatoryFieldException Se i nuovi dati violano vincoli di obbligatorietà.
-     * @throws InvalidIsbnException    Se l'ISBN aggiornato non è valido o crea duplicati.
+     * @pre  book != null
+     * @pre  libraryArchiveService != null
      *
-     * @note Metodo ancora da implementare: il corpo è vuoto.
+     * @post Le modifiche risultano persistite (in assenza di eccezioni).
+     *
+     * @throws MandatoryFieldException Se i nuovi dati violano vincoli di obbligatorietà.
+     * @throws InvalidIsbnException    Se l'ISBN non è valido rispetto al formato previsto.
+     * @throws RuntimeException        Se il salvataggio dell'archivio fallisce (wrapping di IOException).
      */
     public void updateBook(Book book) throws MandatoryFieldException, InvalidIsbnException{
         validateBookMandatoryFields(book);
@@ -101,22 +123,25 @@ public class BookService {
 
         persistChanges(); // Persistenza delle modifiche
     }
-    
+
     /**
      * @brief Rimuove un libro dal catalogo.
      *
-     * @pre  book != null
-     * @pre  Il libro esiste nell'archivio.
-     * @pre  libraryArchive != null
-     *
-     * @post Il libro non è più presente nell'archivio,
-     *       a meno che non venga sollevata un'eccezione.
+     * - verifica precondizioni;
+     * - controlla eventuali prestiti attivi associati al libro;
+     * - rimuove il libro dall'archivio;
+     * - persiste l'archivio aggiornato.
      *
      * @param book Libro da rimuovere.
      *
-     * @throws UserHasActiveLoanException Se esistono prestiti attivi associati al libro.
+     * @pre  book != null
+     * @pre  libraryArchiveService != null
      *
-     * @note Metodo ancora da implementare: il corpo è vuoto.
+     * @post Il libro non è più presente nell'archivio (in assenza di eccezioni).
+     *
+     * @throws IllegalArgumentException      Se book è nullo.
+     * @throws UserHasActiveLoanException    Se esistono prestiti attivi associati al libro.
+     * @throws RuntimeException              Se il salvataggio dell'archivio fallisce (wrapping di IOException).
      */
     public void removeBook(Book book) throws UserHasActiveLoanException{
         if (book == null) {
@@ -137,10 +162,12 @@ public class BookService {
     }
 
     /**
-     * @brief Restituisce la lista di tutti i libri, ordinata per titolo.
+     * @brief Restituisce tutti i libri ordinati per titolo (case-insensitive).
      *
-     * L'ordinamento è case-insensitive e non modifica l'ordinamento
-     * interno dell'archivio (viene restituita una lista di copia).
+     * L'ordinamento è effettuato su una copia della lista restituita dall'archivio.
+     *
+     * @pre  libraryArchiveService != null
+     * @post true
      *
      * @return Lista di libri ordinata per titolo (mai null).
      */
@@ -150,6 +177,17 @@ public class BookService {
         return books;
     }
 
+    /**
+     * @brief Restituisce tutti i libri ordinati per autore.
+     *
+     * Criterio: confronto case-insensitive sul primo autore della lista.
+     * Se la lista autori è vuota, viene usata stringa vuota come chiave.
+     *
+     * @pre  libraryArchiveService != null
+     * @post true
+     *
+     * @return Lista di libri ordinata per autore (mai null).
+     */
     public List<Book> getBooksSortedByAuthor() {
         return getArchive().getBooks().stream()
                 .sorted((b1, b2) -> {
@@ -160,26 +198,41 @@ public class BookService {
                 .toList();
     }
 
+    /**
+     * @brief Restituisce tutti i libri ordinati per anno di pubblicazione.
+     *
+     * @pre  libraryArchiveService != null
+     * @post true
+     *
+     * @return Lista di libri ordinata per anno (mai null).
+     */
     public List<Book> getBooksSortedByYear() {
         return getArchive().getBooks().stream()
                 .sorted(Comparator.comparingInt(Book::getReleaseYear))
                 .toList();
     }
-    
+
     /**
-     * @brief Ricerca libri in base a una stringa di query.
+     * @brief Ricerca libri nel catalogo tramite query testuale.
      *
-     * La query può essere interpretata come titolo, autore o ISBN,
-     * a seconda della logica implementata.
+     * La query viene normalizzata in lower-case e confrontata tramite
+     * matching per sottostringa su:
+     * - titolo;
+     * - autori;
+     * - ISBN.
+     *
+     * Se la query è vuota (dopo trim), restituisce l'intero catalogo ordinato per titolo.
+     *
+     * @param query Testo di ricerca inserito dall'operatore.
      *
      * @pre  query != null
-     * @pre  libraryArchive != null
+     * @pre  libraryArchiveService != null
      *
      * @post true
      *
-     * @param query Testo inserito dall'operatore.
-     * @return Sottoinsieme del catalogo che corrisponde ai criteri di ricerca.
-     *         Attualmente restituisce null finché il metodo non viene implementato.
+     * @return Lista dei libri che soddisfano il criterio di ricerca (mai null).
+     *
+     * @throws IllegalArgumentException Se query è null.
      */
     public List<Book> searchBooks(String query) {
         if (query == null) {
@@ -241,17 +294,12 @@ public class BookService {
     /**
      * @brief Verifica che i campi obbligatori di un libro siano valorizzati.
      *
-     * Controlla:
-     * - titolo non nullo/ne vuoto,
-     * - almeno un autore,
-     * - anno di pubblicazione positivo,
-     * - ISBN non nullo/ne vuoto,
-     * - numero totale di copie > 0,
-     * - copie disponibili tra 0 e totale.
-     *
      * @param book Libro da validare.
      *
-     * @throws MandatoryFieldException se qualche vincolo non è rispettato.
+     * @pre  true
+     * @post true
+     *
+     * @throws MandatoryFieldException Se qualche vincolo non è rispettato.
      */
     private void validateBookMandatoryFields(Book book) throws MandatoryFieldException {
         if (book == null) {
@@ -268,7 +316,7 @@ public class BookService {
             throw new MandatoryFieldException("È necessario specificare almeno un autore.");
         }
 
-        // Anno di pubblicazione (controllo di base: > 0)
+        // Anno di pubblicazione
         if (book.getReleaseYear() <= 0 || book.getReleaseYear() > Year.now().getValue()) {
             throw new MandatoryFieldException("L'anno di pubblicazione non è valido.");
         }
@@ -295,15 +343,18 @@ public class BookService {
     }
 
     /**
-     * @brief Valida il formato di base dell'ISBN.
+     * @brief Valida il formato dell'ISBN.
      *
-     * Implementazione semplice: accetta ISBN con cifre, spazi e trattini,
-     * e controlla che il numero di cifre (esclusi spazi e trattini) sia
-     * tipicamente 10 o 13.
+     * - ammette cifre, spazi e trattini;
+     * - dopo normalizzazione (rimozione spazi e trattini) deve contenere solo cifre;
+     * - lunghezza delle cifre normalizzate pari a 10 o 13.
      *
-     * @param isbn ISBN da validare (non null/ne vuoto).
+     * @param isbn ISBN da validare.
      *
-     * @throws InvalidIsbnException se il formato non è ritenuto valido.
+     * @pre  isbn != null
+     * @post true
+     *
+     * @throws InvalidIsbnException Se il formato non è valido secondo le regole adottate.
      */
     private void validateIsbnFormat(String isbn) throws InvalidIsbnException {
         String normalized = isbn.replace("-", "").replace(" ", "");
@@ -322,7 +373,10 @@ public class BookService {
      *
      * @param isbn ISBN da verificare.
      *
-     * @throws InvalidIsbnException se esiste già un libro con lo stesso ISBN.
+     * @pre  isbn != null
+     * @post true
+     *
+     * @throws InvalidIsbnException Se esiste già un libro con lo stesso ISBN.
      */
     private void validateIsbnUniquenessOnAdd(String isbn) throws InvalidIsbnException {
         Book existing = getArchive().findBookByIsbn(isbn);
@@ -332,11 +386,12 @@ public class BookService {
     }
 
     /**
-     * @brief Effettua il salvataggio dell'archivio tramite LibraryArchiveService.
+     * @brief Persiste le modifiche dell'archivio tramite LibraryArchiveService.
      *
-     * Eventuali IOException vengono convertite in RuntimeException, in quanto
-     * rappresentano un errore applicativo grave che non rientra nei normali
-     * casi d'uso gestiti dall'operatore.
+     * Converte eventuali IOException in RuntimeException, poiché la persistenza
+     * fallita rappresenta un errore applicativo.
+     *
+     * @throws RuntimeException Se il salvataggio fallisce (wrapping di IOException).
      */
     private void persistChanges() {
         try {
@@ -347,10 +402,11 @@ public class BookService {
     }
 
     /**
-     * @brief Ritorna true se la stringa è null o composta solo da spazi.
+     * @brief Verifica se una stringa è nulla o composta solo da spazi.
      *
      * @param value Stringa da controllare.
-     * @return true se null o blank, false altrimenti.
+     *
+     * @return true se value è null o blank, false altrimenti.
      */
     private boolean isNullOrBlank(String value) {
         return value == null || value.trim().isEmpty();
