@@ -25,7 +25,21 @@ import swe.group04.libraryms.service.LoanService;
 import swe.group04.libraryms.service.ServiceLocator;
 
 /**
- * @brief Gestisce le operazioni relative alla lista dei prestiti.
+ * @file LoansListController.java
+ * @brief Controller responsabile della gestione della lista dei prestiti.
+ *
+ * Questo controller gestisce la schermata che mostra l’elenco dei prestiti
+ * della biblioteca e consente di:
+ *  - visualizzare tutti i prestiti o solo quelli attivi,
+ *  - evidenziare graficamente i prestiti scaduti (in ritardo),
+ *  - aprire la schermata di registrazione di un nuovo prestito (UC16),
+ *  - aprire la schermata di dettaglio di un prestito selezionato (UC17),
+ *  - tornare alla schermata principale del sistema.
+ *
+ * La logica di business sui prestiti (ordinamenti, filtraggio attivi, calcolo ritardo,
+ * registrazione restituzione, ecc.) è demandata a LoanService. Questo controller
+ * si occupa di collegare i dati alla view, reagire agli eventi UI e gestire
+ * messaggi e navigazione.
  */
 public class LoansListController {
 
@@ -54,10 +68,17 @@ public class LoansListController {
     // Tiene traccia dell’ultimo filtro applicato.
     private String currentFilter = "Tutti i prestiti";
 
-    /* ============================================================================
-                                  INITIALIZE
-       ============================================================================ */
 
+    /**
+     * @brief Inizializza il controller e configura la tabella dei prestiti.
+     *
+     * Questo metodo viene chiamato automaticamente da JavaFX dopo il
+     * caricamento del file FXML. Le principali operazioni sono:
+     *  - associazione delle colonne alle proprietà del modello Loan,
+     *  - definizione di una rowFactory per evidenziare i prestiti scaduti,
+     *  - caricamento iniziale dei dati tramite refreshTable(),
+     *  - configurazione del filtro tramite ChoiceBox.
+     */
     @FXML
     public void initialize() {
 
@@ -133,9 +154,14 @@ public class LoansListController {
     }
 
     /**
+     * @brief Verifica se un prestito deve essere considerato "in ritardo".
+     *
      * Un prestito è considerato "overdue" se:
-     *  - è attivo
-     *  - il LoanService lo considera in ritardo (isLate == true)
+     *  - risulta ancora attivo (loan.isActive() == true),
+     *  - LoanService.isLate(loan) restituisce true.
+     *
+     * @param loan Prestito da verificare (può essere null).
+     * @return true se il prestito è attivo e in ritardo; false altrimenti.
      */
     private boolean isOverdue(Loan loan) {
         if (loan == null) {
@@ -150,7 +176,12 @@ public class LoansListController {
        ============================================================================ */
 
     /**
-     * Ricarica i dati rispettando il filtro attualmente selezionato.
+     * @brief Ricarica i dati in tabella rispettando il filtro corrente.
+     *
+     * Se la ChoiceBox del filtro è disponibile e ha un valore selezionato,
+     * viene utilizzato quel valore; altrimenti si ripiega su currentFilter.
+     *
+     * @post la TableView mostra un elenco coerente con il filtro selezionato.
      */
     private void refreshTable() {
         String selected =
@@ -163,7 +194,16 @@ public class LoansListController {
     }
 
     /**
-     * Applica il filtro "Tutti i prestiti" / "Prestiti attivi".
+     * @brief Applica il filtro "Tutti i prestiti" / "Prestiti attivi".
+     *
+     * La logica di filtraggio è delegata a LoanService:
+     *  - "Prestiti attivi" → getActiveLoan()
+     *  - altri valori      → getLoansSortedByDueDate()
+     *
+     * @param filter Testo del filtro selezionato nella ChoiceBox (può essere null).
+     *
+     * @post observableLoans contiene l’elenco filtrato dei prestiti,
+     *       e la TableView viene aggiornata di conseguenza.
      */
     private void applyFilter(String filter) {
         if (filter == null) {
@@ -189,10 +229,17 @@ public class LoansListController {
         loanTable.refresh();
     }
 
-    /* ============================================================================
-                               NAVIGAZIONE / AZIONI
-       ============================================================================ */
-
+    /**
+     * @brief Torna alla schermata principale dell’applicazione.
+     *
+     * Carica il file FXML della main view e lo imposta come scena
+     * dello Stage corrente.
+     *
+     * In caso di errore di caricamento, mostra un messaggio d’errore
+     * e lascia invariata la schermata corrente.
+     *
+     * @param event Evento di azione generato dal pulsante "Torna alla home".
+     */
     @FXML
     private void backHome(ActionEvent event) {
         try {
@@ -216,7 +263,15 @@ public class LoansListController {
     }
 
     /**
-     * @brief Apre la finestra di registrazione di un nuovo prestito.
+     * @brief Torna alla schermata principale dell’applicazione.
+     *
+     * Carica il file FXML della main view e lo imposta come scena
+     * dello Stage corrente.
+     *
+     * In caso di errore di caricamento, mostra un messaggio d’errore
+     * e lascia invariata la schermata corrente.
+     *
+     * @param event Evento di azione generato dal pulsante "Torna alla home".
      */
     @FXML
     private void registerLoan(ActionEvent event) {
@@ -250,7 +305,21 @@ public class LoansListController {
     }
 
     /**
-     * @brief Apre la finestra di dettagli del prestito selezionato.
+     * @brief Apre la finestra di dettagli del prestito selezionato (UC17).
+     *
+     * Flusso:
+     *  - verifica che l’utente abbia selezionato un prestito nella tabella,
+     *    altrimenti mostra un messaggio di avviso;
+     *  - carica LoanDetails.fxml e ne recupera il controller;
+     *  - inietta il prestito selezionato tramite setLoan(Loan);
+     *  - registra una callback per aggiornare la lista prestiti
+     *    dopo la restituzione (setOnLoanUpdatedCallback);
+     *  - apre la finestra dei dettagli e, alla chiusura, esegue refreshTable().
+     *
+     * In caso di problemi nel caricamento della view, viene mostrato un
+     * messaggio di errore all’utente.
+     *
+     * @param event Evento di azione generato dal pulsante "Visualizza dettagli".
      */
     @FXML
     private void showLoanDetails(ActionEvent event) {
@@ -287,10 +356,16 @@ public class LoansListController {
         }
     }
 
-    /* ============================================================================
-                                   UTILITIES
-       ============================================================================ */
 
+
+    /**
+     * @brief Mostra un messaggio di errore bloccante.
+     *
+     * Usato per segnalare problemi di caricamento schermate o altre
+     * operazioni non riuscite nella gestione dei prestiti.
+     *
+     * @param msg Testo del messaggio da mostrare.
+     */
     private void showError(String msg) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setTitle("Errore");
@@ -299,6 +374,14 @@ public class LoansListController {
         alert.showAndWait();
     }
 
+    /**
+     * @brief Mostra un messaggio di avviso all’utente.
+     *
+     * Usato per condizioni non eccezionali, come la mancata selezione
+     * di un prestito nella tabella.
+     *
+     * @param msg Testo del messaggio da mostrare.
+     */
     private void showWarning(String msg) {
         Alert alert = new Alert(AlertType.WARNING);
         alert.setTitle("Avviso");
