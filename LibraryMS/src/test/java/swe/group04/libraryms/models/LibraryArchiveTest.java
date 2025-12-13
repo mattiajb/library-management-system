@@ -1,3 +1,18 @@
+/**
+ * @file LibraryArchiveTest.java
+ * @ingroup TestsModels
+ * @brief Suite di test di unità per la classe di dominio LibraryArchive.
+ *
+ * Verifica:
+ * - corretta inizializzazione dell’archivio (liste vuote di libri, utenti e prestiti);
+ * - aggiunta e rimozione di libri e utenti dall’archivio;
+ * - corretta ricerca di libri e utenti tramite identificativi;
+ * - generazione incrementale degli identificativi dei prestiti;
+ * - creazione e registrazione dei prestiti nell’archivio;
+ * - recupero dei prestiti per utente e per libro;
+ * - distinzione corretta tra prestiti attivi e prestiti restituiti;
+ * - corretta serializzazione e deserializzazione dell’archivio.
+ */
 package swe.group04.libraryms.models;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +25,11 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @brief Test di unità per LibraryArchive.
+ *
+ * @ingroup TestsModels
+ */
 class LibraryArchiveTest {
 
     private LibraryArchive archive;
@@ -20,6 +40,12 @@ class LibraryArchiveTest {
     private User user1;
     private User user2;
 
+    /**
+     * @brief Inizializza il fixture di test.
+     *
+     * Crea un archivio vuoto e prepara due libri e due utenti
+     * riutilizzati nei casi di test.
+     */
     @BeforeEach
     void setUp() {
         archive = new LibraryArchive();
@@ -41,9 +67,13 @@ class LibraryArchiveTest {
     }
 
     // -------------------------------------------------------------------------
-    // Inizializzazione
+    //                      Inizializzazione
     // -------------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che un nuovo LibraryArchive inizi con liste vuote.
+     *
+     */
     @Test
     @DisplayName("L'archivio parte con liste vuote e nextLoanId = 1")
     void archiveStartsEmpty() {
@@ -53,9 +83,14 @@ class LibraryArchiveTest {
     }
 
     // -------------------------------------------------------------------------
-    // Aggiunta e rimozione libri
+    //                      Aggiunta e rimozione libri
     // -------------------------------------------------------------------------
 
+    /**
+     * @brief Verifica l’inserimento di un libro nell’archivio.
+     * 
+     * addBook deve aggiungere il libro e renderlo visibile tramite getBooks().
+     */
     @Test
     @DisplayName("addBook aggiunge correttamente un libro")
     void addBookWorks() {
@@ -66,6 +101,11 @@ class LibraryArchiveTest {
         assertEquals(book1, books.get(0));
     }
 
+    /**
+     * @brief Verifica la rimozione di un libro dall’archivio.
+     *
+     * removeBook deve eliminare il libro precedentemente inserito.
+     */
     @Test
     @DisplayName("removeBook rimuove correttamente un libro")
     void removeBookWorks() {
@@ -75,6 +115,11 @@ class LibraryArchiveTest {
         assertTrue(archive.getBooks().isEmpty());
     }
 
+    /**
+     * @brief Verifica la ricerca di un libro tramite ISBN.
+     *
+     * findBookByIsbn deve restituire il libro corretto e null per ISBN assente o null.
+     */
     @Test
     @DisplayName("findBookByIsbn trova correttamente un libro")
     void findBookByIsbnWorks() {
@@ -88,9 +133,14 @@ class LibraryArchiveTest {
     }
 
     // -------------------------------------------------------------------------
-    // Aggiunta e rimozione utenti
+    //                      Aggiunta e rimozione utenti
     // -------------------------------------------------------------------------
 
+    /**
+     * @brief Verifica l’inserimento di un utente nell’archivio.
+     *
+     * addUser deve aggiungere l’utente e renderlo visibile tramite getUsers().
+     */
     @Test
     @DisplayName("addUser aggiunge correttamente un utente")
     void addUserWorks() {
@@ -98,6 +148,11 @@ class LibraryArchiveTest {
         assertEquals(1, archive.getUsers().size());
     }
 
+    /**
+     * @brief Verifica la rimozione di un utente dall’archivio.
+     *
+     * removeUser deve eliminare l’utente precedentemente inserito.
+     */
     @Test
     @DisplayName("removeUser rimuove correttamente un utente")
     void removeUserWorks() {
@@ -106,6 +161,11 @@ class LibraryArchiveTest {
         assertTrue(archive.getUsers().isEmpty());
     }
 
+    /**
+     * @brief Verifica la ricerca di un utente tramite matricola/codice.
+     *
+     * findUserByCode deve restituire l’utente corretto e null per codice assente o null.
+     */
     @Test
     @DisplayName("findUserByCode trova correttamente un utente")
     void findUserByCodeWorks() {
@@ -119,9 +179,14 @@ class LibraryArchiveTest {
     }
 
     // -------------------------------------------------------------------------
-    // Prestiti: generazione ID e aggiunta
+    //                  Prestiti: generazione ID e aggiunta
     // -------------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che la generazione degli ID prestito sia incrementale.
+     *
+     * generateLoanId deve produrre ID progressivi (id_{k+1} = id_k + 1).
+     */
     @Test
     @DisplayName("generateLoanId produce ID incrementali")
     void generateLoanIdIncrements() {
@@ -133,6 +198,11 @@ class LibraryArchiveTest {
         assertEquals(id2 + 1, id3);
     }
 
+    /**
+     * @brief Verifica la creazione e registrazione di un prestito in archivio.
+     *
+     * addLoan deve creare un Loan coerente con user, book e dueDate e aggiungerlo alla lista loans.
+     */
     @Test
     @DisplayName("addLoan crea un prestito valido e lo registra in archivio")
     void addLoanWorks() {
@@ -154,9 +224,14 @@ class LibraryArchiveTest {
     }
 
     // -------------------------------------------------------------------------
-    // Ricerche sui prestiti
+    //                      Ricerche sui prestiti
     // -------------------------------------------------------------------------
 
+    /**
+     * @brief Verifica la ricerca di un prestito tramite ID.
+     *
+     * findLoanById deve restituire il prestito corretto e null per ID inesistente.
+     */
     @Test
     @DisplayName("findLoanById trova il prestito corretto")
     void findLoanByIdWorks() {
@@ -171,6 +246,11 @@ class LibraryArchiveTest {
         assertNull(archive.findLoanById(9999));
     }
 
+    /**
+     * @brief Verifica la ricerca dei prestiti associati a uno specifico utente.
+     *
+     * findLoansByUser deve restituire tutti e soli i prestiti dell’utente richiesto.
+     */
     @Test
     @DisplayName("findLoansByUser restituisce tutti i prestiti dell'utente")
     void findLoansByUserWorks() {
@@ -189,6 +269,11 @@ class LibraryArchiveTest {
         assertTrue(loansUser1.contains(l2));
     }
 
+    /**
+     * @brief Verifica la ricerca dei prestiti associati a uno specifico libro.
+     *
+     * findLoansByBook deve restituire tutti e soli i prestiti del libro richiesto.
+     */
     @Test
     @DisplayName("findLoansByBook restituisce tutti i prestiti del libro")
     void findLoansByBookWorks() {
@@ -209,9 +294,14 @@ class LibraryArchiveTest {
     }
 
     // -------------------------------------------------------------------------
-    // Prestiti attivi e restituiti
+    //                  Prestiti attivi e restituiti
     // -------------------------------------------------------------------------
 
+    /**
+     * @brief Verifica l’estrazione dei soli prestiti attivi.
+     *
+     * getActiveLoans deve includere solo prestiti con status attivo.
+     */
     @Test
     @DisplayName("getActiveLoans restituisce solo prestiti attivi")
     void getActiveLoansWorks() {
@@ -221,7 +311,7 @@ class LibraryArchiveTest {
         Loan l1 = archive.addLoan(user1, book1, LocalDate.now().plusDays(10));
         Loan l2 = archive.addLoan(user1, book1, LocalDate.now().plusDays(20));
 
-        // chiudo uno dei due
+        //  chiusura uno dei due
         l1.setStatus(false);
 
         List<Loan> active = archive.getActiveLoans();
@@ -230,6 +320,11 @@ class LibraryArchiveTest {
         assertSame(l2, active.get(0));
     }
 
+    /**
+     * @brief Verifica l’estrazione dei soli prestiti chiusi.
+     *
+     * getReturnedLoans deve includere solo prestiti con status non attivo.
+     */
     @Test
     @DisplayName("getReturnedLoans restituisce solo prestiti chiusi")
     void getReturnedLoansWorks() {
@@ -248,9 +343,16 @@ class LibraryArchiveTest {
     }
 
     // -------------------------------------------------------------------------
-    // Serializzazione
+    //                      Serializzazione
     // -------------------------------------------------------------------------
 
+    /**
+     * @brief Verifica la serializzazione e deserializzazione dell’archivio.
+     *
+     * Dopo round-trip di serializzazione, l’archivio deve mantenere libri, utenti e prestiti registrati.
+     *
+     * @throws Exception In caso di fallimento della serializzazione/deserializzazione.
+     */
     @Test
     @DisplayName("LibraryArchive si serializza e deserializza correttamente")
     void serializationWorks() throws Exception {
