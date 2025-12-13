@@ -1,8 +1,3 @@
-/**
- * @file BookController.java
- * @brief Controller responsabile della gestione delle operazioni sui libri.
- */
-
 package swe.group04.libraryms.controllers;
 
 import java.io.IOException;
@@ -23,15 +18,15 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import swe.group04.libraryms.models.Book;
 import swe.group04.libraryms.service.BookService;
-import swe.group04.libraryms.service.LibraryArchiveService;
 import swe.group04.libraryms.service.ServiceLocator;
 
 /**
- * @brief Gestisce le operazioni relative alla visualizzazione, creazione,
- *        modifica e rimozione dei libri dal catalogo.
+ * @file BookCatalogController.java
+ * @brief Controller JavaFX responsabile della gestione del catalogo libri.
  *
- * Il controller media tra interfaccia utente e logica applicativa
- * per la gestione dei libri.
+ * Gestisce la visualizzazione del catalogo in una TableView, la ricerca e
+ * l'ordinamento dei libri e la navigazione verso schermate di aggiunta/dettagli.
+ * Le operazioni di business e accesso ai dati sono delegate a BookService.
  */
 public class BookCatalogController {
 
@@ -48,40 +43,27 @@ public class BookCatalogController {
     @FXML private TableColumn<Book, String> isbnColumn;
     @FXML private TableColumn<Book, Integer> availabilityColumn;
 
-    // ---------------------------------------------------------
-    // SERVICE
-    // ---------------------------------------------------------
-
-    /** Acceso tramite ServiceLocator */
+    /** Servizio per operazioni su libri (logica applicativa e accesso ai dati). */
     private final BookService bookService = ServiceLocator.getBookService();
 
-    /** Lista osservabile popolata dai dati del servizio */
+    /** Lista osservabile associata alla TableView; contiene i libri attualmente mostrati. */
     private ObservableList<Book> observableBooks;
 
-    /** Ordinamento corrente selezionato dall’utente */
+    /** Criterio di ordinamento corrente selezionato dall'utente nel ChoiceBox. */
     private String currentSort = "Ordina per titolo";
 
-       /* ============================================================================
-                                     INIZIALIZZAZIONE
-       ============================================================================ */
-
     /**
-     * @brief Inizializza controller e tabella libri.
+     * @brief Inizializza la TableView, i binding delle colonne e i listener di ricerca/ordinamento.
      *
-     * Viene chiamato automaticamente da JavaFX dopo il caricamento del FXML.
+     * @pre titleColumn, authorColumn, yearColumn, isbnColumn, availabilityColumn, bookTable,
+     *      bookSortChoiceBox, searchField sono non null (iniezione FXML completata).
+     * @post La TableView è configurata e popolata con i libri caricati dal BookService.
+     * @post Il ChoiceBox contiene i criteri di ordinamento e risulta selezionato currentSort.
      */
     public void initialize() {
 
-        // Titolo
-        titleColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(
-                        cellData.getValue().getTitle() != null
-                                ? cellData.getValue().getTitle()
-                                : ""
-                )
-        );
+        titleColumn.setCellValueFactory(cellData ->new SimpleStringProperty(cellData.getValue().getTitle() != null ? cellData.getValue().getTitle(): ""));
 
-        // Autore (primo autore o lista unita)
         authorColumn.setCellValueFactory(cellData -> {
             Book b = cellData.getValue();
             String authors;
@@ -93,69 +75,40 @@ public class BookCatalogController {
             return new SimpleStringProperty(authors);
         });
 
-        // Anno
-        yearColumn.setCellValueFactory(cellData ->
-                new SimpleIntegerProperty(cellData.getValue().getReleaseYear()).asObject()
-        );
+        yearColumn.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getReleaseYear()).asObject());
 
-        // ISBN
-        isbnColumn.setCellValueFactory(cellData ->
-                new SimpleStringProperty(
-                        cellData.getValue().getIsbn() != null
-                                ? cellData.getValue().getIsbn()
-                                : ""
-                )
-        );
+        isbnColumn.setCellValueFactory(cellData ->new SimpleStringProperty(cellData.getValue().getIsbn() != null ? cellData.getValue().getIsbn(): ""));
 
-        // Disponibilità (copie disponibili)
         availabilityColumn.setCellValueFactory(cellData ->
                 new SimpleIntegerProperty(cellData.getValue().getAvailableCopies()).asObject()
         );
 
-        /* -- Caricamento iniziale dati -- */
         refreshTable();
 
-        /* -- Popolamento ChoiceBox ordinamento -- */
-        bookSortChoiceBox.getItems().setAll(
-                "Ordina per titolo",
-                "Ordina per autore",
-                "Ordina per anno di pubblicazione"
-        );
+        bookSortChoiceBox.getItems().setAll("Ordina per titolo", "Ordina per autore", "Ordina per anno di pubblicazione");
 
         bookSortChoiceBox.getSelectionModel().select(currentSort);
 
         /* Listener su ordinamento */
-        bookSortChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
-            applySort(newV);
-        });
+        bookSortChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {applySort(newV);});
 
         /* Listener ricerca in tempo reale */
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> {
-            applySearch(newVal);
-        });
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> {applySearch(newVal);});
     }
 
-
-    /* ============================================================================
-                               CARICAMENTO + AGGIORNAMENTO DATI
-       ============================================================================ */
-
     /**
-     * @brief Carica i libri dal servizio e li inserisce nella TableView.
+     * @brief Ricarica i libri dal servizio applicando l'ordinamento corrente e aggiorna la tabella.
      */
     private void refreshTable() {
         List<Book> books;
 
         // Applica lo stesso criterio di ordinamento usato dall’utente
         switch (currentSort) {
-            case "Ordina per autore" ->
-                    books = bookService.getBooksSortedByAuthor();
+            case "Ordina per autore" -> books = bookService.getBooksSortedByAuthor();
 
-            case "Ordina per anno di pubblicazione" ->
-                    books = bookService.getBooksSortedByYear();
+            case "Ordina per anno di pubblicazione" -> books = bookService.getBooksSortedByYear();
 
-            default ->
-                    books = bookService.getBooksSortedByTitle();
+            default -> books = bookService.getBooksSortedByTitle();
         }
 
         if (observableBooks == null) {
@@ -169,7 +122,7 @@ public class BookCatalogController {
     }
 
     /**
-     * @brief Applica filtro testuale ai libri.
+     * @brief Filtra i libri in base a una query testuale e aggiorna la tabella.
      */
     private void applySearch(String query) {
         if (query == null || query.isBlank()) {
@@ -183,7 +136,7 @@ public class BookCatalogController {
     }
 
     /**
-     * @brief Applica ordinamento selezionato nel ChoiceBox.
+     * @brief Imposta il criterio di ordinamento selezionato e ricarica la tabella.
      */
     private void applySort(String selected) {
         if (selected == null) return;
@@ -195,21 +148,20 @@ public class BookCatalogController {
         refreshTable();
     }
 
-
-    /* ============================================================================
-                                  NAVIGAZIONE
-       ============================================================================ */
-
     /**
-     * @brief Torna alla home.
+     * @brief Torna alla schermata principale caricando main.fxml nello Stage corrente.
+     *
+     * @param event Evento generato dal click sul pulsante Home/Back.
+     * @pre event != null e la sorgente dell'evento appartiene a una Scene con uno Stage valido.
+     * @post Se il caricamento va a buon fine, lo Stage corrente mostra la schermata main.fxml.
+     * @post In caso di errore di caricamento, viene mostrato un Alert di errore.
      */
     @FXML
     public void backHome(ActionEvent event) {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("/swe/group04/libraryms/view/main.fxml"));
             Scene scene = new Scene(root);
-            scene.getStylesheets().add(
-                    getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
+            scene.getStylesheets().add(getClass().getResource("/swe/group04/libraryms/css/style.css").toExternalForm());
 
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setTitle("Library Management System");
@@ -221,7 +173,13 @@ public class BookCatalogController {
     }
 
     /**
-     * @brief Apre la finestra "Aggiungi Libro".
+     * @brief Apre la finestra di inserimento di un nuovo libro.
+     *
+     * @param event Evento generato dal click sul pulsante "Aggiungi libro".
+     * @pre event != null e la sorgente dell'evento appartiene a una Scene con uno Stage valido.
+     * @post Se il caricamento va a buon fine, viene mostrato uno Stage con AddBook.fxml.
+     * @post La finestra di inserimento registra una callback per aggiornare la tabella dopo l'aggiunta.
+     * @post In caso di errore, viene mostrato un Alert di errore.
      */
     @FXML
     private void addBook(ActionEvent event) {
@@ -248,7 +206,16 @@ public class BookCatalogController {
             showError("Impossibile aprire la finestra di aggiunta libro.");
         }
     }
-
+    
+    /**
+     * @brief Apre la finestra dei dettagli del libro selezionato nella tabella.
+     *
+     * @param event Evento generato dal click sul pulsante "Dettagli".
+     * @pre bookTable != null
+     * @post Se nessun libro è selezionato, viene mostrato un Alert di avviso e non viene aperta alcuna finestra.
+     * @post Se un libro è selezionato, viene mostrato uno Stage con BookDetails.fxml e il controller riceve il Book selezionato.
+     * @post Alla chiusura della finestra dettagli, la tabella viene aggiornata.
+     */
     @FXML
     private void openBookDetails(ActionEvent event) {
         Book selected = bookTable.getSelectionModel().getSelectedItem();
@@ -286,11 +253,9 @@ public class BookCatalogController {
         }
     }
 
-
-    /* ============================================================================
-                                   UTILITIES
-       ============================================================================ */
-
+    /**
+     * @brief Mostra un Alert di errore con il messaggio fornito.
+     */
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Errore");
