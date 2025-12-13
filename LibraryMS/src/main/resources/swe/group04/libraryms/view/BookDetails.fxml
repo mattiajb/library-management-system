@@ -12,9 +12,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="420.0" prefWidth="650.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
-            stylesheets="/swe/group04/libraryms/css/style.css"
-            fx:controller="swe.group04.libraryms.controllers.BookDetailsController">
+<BorderPane prefHeight="420.0" prefWidth="650.0" styleClass="root-pane" stylesheets="/swe/group04/libraryms/css/style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.BookDetailsController">
 
     <!-- HEADER -->
     <top>
@@ -45,7 +43,7 @@
                         <!-- Titolo -->
                         <Label styleClass="form-label" text="Titolo:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
 
-                        <TextField fx:id="titleField" promptText="Titolo del libro" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <TextField fx:id="titleField" prefHeight="25.0" prefWidth="250.0" promptText="Titolo del libro" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                         <!-- Autore -->
                         <Label styleClass="form-label" text="Autore:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
