@@ -239,19 +239,6 @@ public class UserService {
 
     /**
      * @brief Verifica la presenza dei campi obbligatori dell'utente.
-     *
-     * Controlla:
-     * - nome non nullo e non vuoto;
-     * - cognome non nullo e non vuoto;
-     * - matricola/codice non nullo e non vuoto;
-     * - email non nulla e non vuota.
-     *
-     * @param user Utente da validare.
-     *
-     * @pre  true
-     * @post true
-     *
-     * @throws MandatoryFieldException Se user è nullo o un campo obbligatorio è mancante.
      */
     private void validateMandatoryFields(User user) throws MandatoryFieldException {
 
@@ -278,18 +265,6 @@ public class UserService {
 
     /**
      * @brief Valida l'indirizzo email dell'utente.
-     *
-     * Regole adottate:
-     * - email non vuota;
-     * - deve rispettare la regex definita dal metodo;
-     * - sono ammessi solo indirizzi che terminano con 'unisa.it' (secondo regex).
-     *
-     * @param email Indirizzo email da validare.
-     *
-     * @pre  true
-     * @post true
-     *
-     * @throws InvalidEmailException Se email è vuota o non rispetta il formato previsto.
      */
     private void validateEmail(String email) throws InvalidEmailException {
         if (email == null || email.trim().isEmpty()) {
@@ -303,13 +278,6 @@ public class UserService {
 
     /**
      * @brief Verifica unicità della matricola in fase di inserimento.
-     *
-     * @param code Matricola/codice da verificare.
-     *
-     * @pre  code != null
-     * @post true
-     *
-     * @throws MandatoryFieldException Se esiste già un utente con la stessa matricola.
      */
     private void validateMatricolaUniquenessOnAdd(String code) throws MandatoryFieldException {
 
@@ -322,16 +290,6 @@ public class UserService {
 
     /**
      * @brief Verifica unicità della matricola in fase di aggiornamento.
-     *
-     * Consente la stessa matricola solo se appartiene alla stessa istanza utente
-     * (existing == user). Se un altro utente possiede la stessa matricola, solleva eccezione.
-     *
-     * @param user Utente da verificare.
-     *
-     * @pre  user != null
-     * @post true
-     *
-     * @throws MandatoryFieldException Se esiste già un altro utente con la stessa matricola.
      */
     private void validateMatricolaUniquenessOnUpdate(User user) throws MandatoryFieldException {
 
@@ -348,11 +306,6 @@ public class UserService {
 
     /**
      * @brief Verifica se un campo contiene la query (case-insensitive).
-     *
-     * @param field Campo testuale su cui effettuare il confronto (può essere null).
-     * @param query Query già normalizzata in lower-case.
-     *
-     * @return true se field contiene query (ignorando maiuscole/minuscole), false altrimenti.
      */
     private boolean containsIgnoreCase(String field, String query) {
         return field != null && field.toLowerCase().contains(query);
@@ -360,9 +313,6 @@ public class UserService {
 
     /**
      * @brief Verifica se una stringa è nulla o composta solo da spazi.
-     *
-     * @param s Stringa da controllare.
-     * @return true se s è null o blank, false altrimenti.
      */
     private boolean isBlank(String s) {
         return s == null || s.trim().isEmpty();
@@ -370,11 +320,6 @@ public class UserService {
 
     /**
      * @brief Persiste le modifiche dell'archivio tramite LibraryArchiveService.
-     *
-     * Converte eventuali IOException in RuntimeException, poiché la persistenza
-     * fallita rappresenta un errore applicativo.
-     *
-     * @throws RuntimeException Se il salvataggio fallisce (wrapping di IOException).
      */
     private void persistChanges() {
         try {

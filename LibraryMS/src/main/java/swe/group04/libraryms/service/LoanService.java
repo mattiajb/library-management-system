@@ -36,16 +36,15 @@ import swe.group04.libraryms.models.User;
  */
 public class LoanService {
 
-    /** Servizio per l'accesso e la persistenza dell'archivio. */
-    private final LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
+    //  Servizio per l'accesso e la persistenza dell'archivio.
+    private final LibraryArchiveService libraryArchiveService; //<  Servizio per la persistenza dell'archivio
 
     /**
      * @brief Comparatore per ordinare i prestiti per data di scadenza (dueDate).
      *
      * Le scadenze nulle sono poste in fondo (nullsLast).
      */
-    private static final Comparator<Loan> BY_DUEDATE_COMPARATOR =
-            Comparator.comparing(Loan::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()));
+    private static final Comparator<Loan> BY_DUEDATE_COMPARATOR = Comparator.comparing(Loan::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()));
 
 
     /**
