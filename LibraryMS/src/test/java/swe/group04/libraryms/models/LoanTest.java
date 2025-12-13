@@ -1,6 +1,6 @@
 /**
  * @file LoanTest.java
- * @ingroup ModelsTests
+ * @ingroup TestsModels
  * @brief Test di unità per la classe Loan.
  * 
  * Verifica:
@@ -22,7 +22,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @ingroup ModelsTests
+ * @ingroup TestsModels
  * @brief Suite di test per il modello Loan.
  *
  * Verifica le proprietà funzionali essenziali del prestito e
