@@ -1,3 +1,15 @@
+/**
+ * @file LoanTest.java
+ * @ingroup ModelsTests
+ * @brief Test di unità per la classe Loan.
+ * 
+ * Verifica:
+ * - inizializzazione tramite costruttore;
+ * - correttezza di getter e setter;
+ * - gestione dello stato (status) tramite getStatus(), setStatus() e isActive();
+ * - contratto di equals() e hashCode() basato su loanId;
+ * - contenuto informativo di toString().
+ */
 package swe.group04.libraryms.models;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -9,18 +21,36 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @ingroup ModelsTests
+ * @brief Suite di test per il modello Loan.
+ *
+ * Verifica le proprietà funzionali essenziali del prestito e
+ * la coerenza dei metodi fondamentali del modello.
+ */
 class LoanTest {
 
-    // Fixture di base
+    //  Identificativo del prestito usato come fixture di base.
     private static final int LOAN_ID = 42;
 
+    //  @brief Utente associato al prestito.
     private User user;
+
+    //  Libro associato al prestito (fixture).
     private Book book;
+
+    //  Data di registrazione del prestito.
     private LocalDate loanDate;
+
+    //  Data di scadenza prevista del prestito.
     private LocalDate dueDate;
 
+    //  Istanza di prestito sottoposta ai test.
     private Loan loan;
 
+    /**
+     * @brief Crea un utente, un libro, le date e un prestito in stato attivo.
+     */
     @BeforeEach
     void setUp() {
         user = new User("Mario", "Rossi", "mario.rossi@example.com", "S123456");
@@ -34,14 +64,23 @@ class LoanTest {
         loanDate = LocalDate.of(2025, 1, 10);
         dueDate  = LocalDate.of(2025, 2, 10);
 
-        // uso status = true come caso di default
+        //  utilizzo di status=true come caso di default
         loan = new Loan(LOAN_ID, user, book, loanDate, dueDate, true);
     }
 
     // ---------------------------------------------------------------------
-    // Costruttore e getter
+    //                      Costruttore e getter
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica l'inizializzazione dei campi tramite costruttore.
+     *
+     * Controlla che:
+     * - l'ID sia quello atteso;
+     * - user e book siano gli stessi riferimenti forniti;
+     * - loanDate e dueDate corrispondano ai valori passati;
+     * - returnDate sia null all'atto della creazione.
+     */
     @Test
     @DisplayName("Il costruttore inizializza correttamente ID, user, book, loanDate, dueDate e returnDate=null")
     void constructorInitializesFieldsCorrectly() {
@@ -53,25 +92,36 @@ class LoanTest {
         assertNull(loan.getReturnDate());
     }
 
+    /**
+     * @brief Verifica il rispetto del parametro status nel costruttore
+     *
+     * Questo test evidenzia un comportamento atteso: se l'implementazione
+     * del modello non rispetta il parametro status, il test fallisce e segnala un difetto.
+     */
     @Test
     @DisplayName("Il costruttore dovrebbe rispettare il parametro status")
     void constructorShouldRespectStatusParameter() {
         Loan activeLoan  = new Loan(1, user, book, loanDate, dueDate, true);
         Loan closedLoan  = new Loan(2, user, book, loanDate, dueDate, false);
 
-        // Comportamento desiderato:
+        //  Comportamento desiderato:
         assertTrue(activeLoan.getStatus(), "status=true dovrebbe produrre prestito attivo");
         assertFalse(closedLoan.getStatus(), "status=false dovrebbe produrre prestito non attivo");
 
         assertTrue(activeLoan.isActive());
         assertFalse(closedLoan.isActive());
-        // Con l'implementazione attuale questo test fallirà: evidenzia il bug.
+        //  Con l'implementazione attuale questo test fallirà: evidenzia il bug.
     }
 
     // ---------------------------------------------------------------------
-    // Setter base: user, book, loanDate, dueDate, returnDate
+    //          Setter base: user, book, loanDate, dueDate, returnDate
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica l'aggiornamento dei riferimenti a user e book.
+     * 
+     * I setter aggiornano correttamente user e book.
+     */
     @Test
     @DisplayName("I setter aggiornano correttamente user e book")
     void settersUpdateUserAndBook() {
@@ -91,6 +141,11 @@ class LoanTest {
         assertSame(anotherBook, loan.getBook());
     }
 
+    /**
+     * @brief Verifica l'aggiornamento delle date del prestito.
+     * 
+     * I setter aggiornano correttamente le date di prestito e scadenza.
+     */
     @Test
     @DisplayName("I setter aggiornano correttamente le date di prestito e scadenza")
     void settersUpdateDates() {
@@ -104,6 +159,14 @@ class LoanTest {
         assertEquals(newDueDate, loan.getDueDate());
     }
 
+    /**
+     * @brief Verifica chd setReturnDate aggiorni correttamente la data di restituzione.
+     *
+     * Controlla che:
+     * - inizialmente returnDate sia null;
+     * - venga impostata una data;
+     * - sia lecito reimpostarla a null.
+     */
     @Test
     @DisplayName("setReturnDate aggiorna correttamente la data di restituzione")
     void setReturnDateUpdatesReturnDate() {
@@ -120,23 +183,29 @@ class LoanTest {
     }
 
     // ---------------------------------------------------------------------
-    // status, setStatus e isActive
+    //                  status, setStatus e isActive
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica la coerenza tra getStatus() e isActive().
+     */
     @Test
     @DisplayName("getStatus e isActive riflettono lo stato corrente del prestito")
     void isActiveReflectsStatus() {
-        // Caso 1: prestito attivo
+        //  Caso 1: prestito attivo
         loan.setStatus(true);
         assertTrue(loan.getStatus());
         assertTrue(loan.isActive());
 
-        // Caso 2: prestito non attivo
+        //  Caso 2: prestito non attivo
         loan.setStatus(false);
         assertFalse(loan.getStatus());
         assertFalse(loan.isActive());
     }
 
+    /**
+     * @brief Verifica che setStatus imposti e ritorni il nuovo valore.
+     */
     @Test
     @DisplayName("setStatus imposta lo stato e restituisce il nuovo valore")
     void setStatusUpdatesAndReturnsNewValue() {
@@ -150,9 +219,14 @@ class LoanTest {
     }
 
     // ---------------------------------------------------------------------
-    // equals e hashCode
+    //                      equals e hashCode
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica proprietà basilari di equals().
+     * 
+     * Equals è riflessivo, gestisce null e oggetti di classe diversa.
+     */
     @Test
     @DisplayName("equals è riflessivo, gestisce null e oggetti di classe diversa")
     void equalsBasicProperties() {
@@ -161,6 +235,11 @@ class LoanTest {
         assertNotEquals(loan, "stringa"); // tipo diverso
     }
 
+    /**
+     * @brief Verifica che equals/hashCode dipendano da loanId.
+     * 
+     * Due Loan con lo stesso loanId sono uguali, anche se altri campi differiscono.
+     */
     @Test
     @DisplayName("Due Loan con lo stesso loanId sono uguali, anche se altri campi differiscono")
     void equalsSameLoanIdDifferentOtherFields() {
@@ -183,6 +262,11 @@ class LoanTest {
         assertEquals(l1.hashCode(), l2.hashCode());
     }
 
+    /**
+     * @brief Verifica la disuguaglianza su loanId differente.
+     * 
+     * Due Loan con loanId diversi NON sono uguali.
+     */
     @Test
     @DisplayName("Due Loan con loanId diversi NON sono uguali")
     void equalsDifferentLoanId() {
@@ -193,32 +277,39 @@ class LoanTest {
     }
 
     // ---------------------------------------------------------------------
-    // toString
+    //                      toString
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica il contenuto informativo di toString().
+     * 
+     * toString contiene le informazioni principali: ID, user code, book isbn, date.
+     * Controlla anche il caso di returnDate nulla ("Not returned") e il caso
+     * in cui returnDate è impostata (la data deve comparire in stringa).
+     */
     @Test
     @DisplayName("toString contiene le informazioni principali (ID, user code, book isbn, date)")
     void toStringContainsMainInfo() {
         String s = loan.toString();
 
-        // ID del prestito
+        //  ID del prestito
         assertTrue(s.contains("Loan ID"));
         assertTrue(s.contains(String.valueOf(LOAN_ID)));
 
-        // User code
+        //  User code
         assertTrue(s.contains(user.getCode()));
 
-        // Book ISBN
+        //  Book ISBN
         assertTrue(s.contains(book.getIsbn()));
 
-        // Loan & due date
+        //  Loan & due date
         assertTrue(s.contains(loanDate.toString()));
         assertTrue(s.contains(dueDate.toString()));
 
-        // Return Date quando null => "Not returned"
+        //  Return Date quando null => "Not returned"
         assertTrue(s.contains("Not returned"));
 
-        // Se imposto una returnDate, la stringa deve contenerla
+        //  Se imposto una returnDate, la stringa deve contenerla
         LocalDate returnDate = LocalDate.of(2025, 1, 25);
         loan.setReturnDate(returnDate);
         String s2 = loan.toString();
