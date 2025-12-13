@@ -1,3 +1,8 @@
+/**
+ * @brief Gestisce l’interazione della GUI per creare un nuovo Loan.
+ *
+ * @pre Il file FXML associato inietta correttamente tutti i componenti @FXML.
+ */
 package swe.group04.libraryms.controllers;
 
 import java.time.LocalDate;
@@ -27,14 +32,14 @@ import swe.group04.libraryms.service.LoanService;
 import swe.group04.libraryms.service.ServiceLocator;
 
 /**
- * Gestisce l'operazione di registrazione di un nuovo prestito.
+ * @file RegisterLoanController.java
+ * @brief Controller JavaFX responsabile della registrazione di un nuovo prestito.
  *
- * - Ricerca dinamica stile "Google" su utenti e libri tramite TextField
- * - ComboBox mostrate/filtrate in base al testo inserito
+ * Permette di selezionare utente e libro tramite ricerca testuale con filtro dinamico
+ * e di inserire la data di restituzione prevista. Delega a LoanService la logica
+ * di registrazione del prestito e a LibraryArchiveService l’accesso all’archivio.
  */
 public class RegisterLoanController {
-
-    /* ======================= FXML COMPONENTS ======================= */
 
     @FXML private TextField userSearchField;
     @FXML private ComboBox<User> userComboBox;
@@ -46,25 +51,32 @@ public class RegisterLoanController {
     @FXML private Button saveLoanButton;
     @FXML private Button cancelButton;
 
-    /* =========================== SERVICES ========================== */
+    /** Servizio prestiti: validazione di dominio e registrazione prestiti. */
+    private final LoanService loanService = ServiceLocator.getLoanService();
 
-    private final LoanService loanService =
-            ServiceLocator.getLoanService();
-    private final LibraryArchiveService archiveService =
-            ServiceLocator.getArchiveService();
+    /** Servizio archivio: accesso ai dati caricati (utenti, libri, prestiti). */
+    private final LibraryArchiveService archiveService = ServiceLocator.getArchiveService();
 
+    /** Callback opzionale eseguita dopo una registrazione riuscita (es. refresh lista prestiti). */
     private Runnable onLoanRegisteredCallback;
-
-    /* ====================== LISTE E FILTRI ========================= */
-
+    
     private ObservableList<User> allUsers;
     private FilteredList<User>   filteredUsers;
-
     private ObservableList<Book> allBooks;
     private FilteredList<Book>   filteredBooks;
 
-    /* ========================== INITIALIZE ========================= */
-
+    /**
+     * @brief Inizializza i componenti di selezione utente/libro con ricerca e filtro dinamico.
+     *
+     * Configura:
+     * - popolamento delle ComboBox con utenti e libri dall'archivio;
+     * - cell factory per la visualizzazione compatta;
+     * - listener sui TextField per filtrare dinamicamente le liste (FilteredList).
+     *
+     * @pre archiveService != null
+     * @post Se l'archivio è disponibile, userComboBox e bookComboBox risultano popolate e filtrabili.
+     * @post Se l'archivio non è disponibile, l'inizializzazione termina senza configurare le liste.
+     */
     @FXML
     public void initialize() {
 
@@ -73,7 +85,6 @@ public class RegisterLoanController {
             return;
         }
 
-        /* --------- UTENTI --------- */
         allUsers = FXCollections.observableArrayList(archive.getUsers());
         filteredUsers = new FilteredList<>(allUsers, u -> true);
 
@@ -135,7 +146,6 @@ public class RegisterLoanController {
             }
         });
 
-        /* --------- LIBRI --------- */
         allBooks = FXCollections.observableArrayList(archive.getBooks());
         filteredBooks = new FilteredList<>(allBooks, b -> true);
 
@@ -165,7 +175,6 @@ public class RegisterLoanController {
             }
         });
 
-        // Listener per la ricerca libri
         bookSearchField.textProperty().addListener((obs, oldText, newText) -> {
             String filter = (newText == null) ? "" : newText.trim().toLowerCase();
             Book selected = bookComboBox.getSelectionModel().getSelectedItem();
@@ -173,7 +182,6 @@ public class RegisterLoanController {
             filteredBooks.setPredicate(book -> {
                 if (book == null) return false;
 
-                // Mantieni il libro selezionato sempre visibile
                 if (selected != null && book.equals(selected)) {
                     return true;
                 }
@@ -182,8 +190,7 @@ public class RegisterLoanController {
                     return true;
                 }
 
-                String composite = (book.getIsbn() + " "
-                        + book.getTitle()).toLowerCase();
+                String composite = (book.getIsbn() + " " + book.getTitle()).toLowerCase();
 
                 return composite.contains(filter);
             });
@@ -193,15 +200,39 @@ public class RegisterLoanController {
             }
         });
     }
-
-    /* =================== CALLBACK REGISTRAZIONE ==================== */
-
+    
+    /**
+     * @brief Registra una callback eseguita dopo la registrazione riuscita di un prestito.
+     *
+     * @param callback Azione da eseguire dopo il salvataggio; può essere null.
+     * @post onLoanRegisteredCallback == callback
+     */
     public void setOnLoanRegisteredCallback(Runnable callback) {
         this.onLoanRegisteredCallback = callback;
     }
-
-    /* ======================= CONFERMA PRESTITO ===================== */
-
+    
+    /**
+     * @brief Valida i dati del form e registra un nuovo prestito tramite LoanService.
+     *
+     * @param event Evento generato dal click sul pulsante di conferma.
+     * @pre I componenti FXML (userComboBox, bookComboBox, dueDatePicker) sono non null.
+     * @post Se l'operazione ha successo:
+     *       - viene creato e registrato un nuovo Loan tramite LoanService;
+     *       - viene mostrato un messaggio informativo con l'ID del prestito;
+     *       - viene invocata (se presente) la callback;
+     *       - la finestra corrente viene chiusa.
+     *
+     * Validazioni gestite dal controller:
+     * - selezione di utente, libro e data non null;
+     * - data di restituzione prevista non nel passato;
+     * - presenza corrente di utente/libro nell'archivio (anti-stato-stantio).
+     *
+     * Gestione errori:
+     * - MandatoryFieldException: dati obbligatori mancanti secondo la logica di dominio;
+     * - NoAvailableCopiesException: nessuna copia disponibile del libro selezionato;
+     * - MaxLoansReachedException: utente ha raggiunto il limite massimo di prestiti;
+     * - RuntimeException: errore non previsto (es. persistenza/archivio).
+     */
     @FXML
     private void confirmLoan(ActionEvent event) {
         try {
@@ -255,27 +286,34 @@ public class RegisterLoanController {
             showError(ex.getMessage());
 
         } catch (RuntimeException ex) {
-            showError("Si è verificato un errore durante la registrazione del prestito.\nDettagli: "
-                    + ex.getMessage());
+            showError("Si è verificato un errore durante la registrazione del prestito.\nDettagli: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
-
-    /* ===================== ANNULLA / CHIUDI ======================== */
-
+    
+    /**
+     * @brief Annulla l'operazione di registrazione e chiude la finestra corrente.
+     *
+     * @param event Evento generato dal click sul pulsante di annullamento.
+     * @pre event != null e la sorgente dell'evento appartiene a una Scene con uno Stage valido.
+     * @post Lo Stage della finestra corrente risulta chiuso.
+     */
     @FXML
     private void cancelOperation(ActionEvent event) {
         closeStage(event);
     }
-
+    
+    /** 
+     * @brief Chiude lo Stage associato alla sorgente dell'evento. @param event Evento UI. 
+     */
     private void closeStage(ActionEvent event) {
-        Stage stage = (Stage) ((Node) event.getSource())
-                .getScene().getWindow();
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.close();
     }
-
-    /* ======================= UTIL PER GLI ALERT ==================== */
-
+    
+    /**
+     * @brief Mostra un Alert di errore con il messaggio fornito.
+     */
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Errore");
@@ -283,7 +321,10 @@ public class RegisterLoanController {
         alert.setContentText(message);
         alert.showAndWait();
     }
-
+    
+    /**
+     * @brief Mostra un Alert informativo con il messaggio fornito.
+     */
     private void showInfo(String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Informazione");
