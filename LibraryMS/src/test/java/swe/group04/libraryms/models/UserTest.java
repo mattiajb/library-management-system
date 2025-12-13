@@ -1,3 +1,15 @@
+/**
+ * @file UserTest.java
+ * @ingroup TestsModels
+ * @brief Suite di test di unità per la classe di dominio User.
+ *
+ * Verifica:
+ * - corretta inizializzazione dei campi tramite costruttore e coerenza dei getter;
+ * - uso di copie difensive per la lista dei prestiti attivi;
+ * - corretto comportamento dei metodi di gestione prestiti (addLoan, removeLoan, hasActiveLoans);
+ * - proprietà di equals/hashCode basate sul codice identificativo (matricola);
+ * - presenza delle informazioni principali nella rappresentazione testuale (toString).
+ */
 package swe.group04.libraryms.models;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -9,24 +21,47 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @brief Test di unità per User
+ *
+ * I test validano i comportamenti osservabili dell'utente, con attenzione alle copie difensive
+ * sulla lista dei prestiti attivi e alle proprietà di identità basate sul campo.
+ *
+ * @ingroup TestsModels
+ */
 class UserTest {
 
+    //  Nome utilizzato nei test.
     private static final String FIRST_NAME = "Mario";
+    //  Cognome utilizzato nei test.
     private static final String LAST_NAME  = "Rossi";
+    //  Email utilizzata nei test.
     private static final String EMAIL      = "mario.rossi@example.com";
+    //  Codice identificativo (matricola) utilizzato nei test. */
     private static final String CODE       = "S123456";
 
+    //  Istanza di User inizializzata prima di ogni test.
     private User user;
 
+    /**
+     * @brief Inizializza un oggetto User valido prima di ogni test.
+     *
+     * Garantisce isolamento tra i test: ogni test opera su un'istanza nuova.
+     */
     @BeforeEach
     void setUp() {
         user = new User(FIRST_NAME, LAST_NAME, EMAIL, CODE);
     }
 
     // ---------------------------------------------------------------------
-    // Costruttore e getter di base
+    //                      Costruttore e getter di base
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica la coerenza tra valori passati al costruttore e getter.
+     * 
+     * @post La lista dei prestiti attivi è inizialmente vuota.
+     */
     @Test
     @DisplayName("Il costruttore inizializza correttamente i campi di base e la lista prestiti")
     void constructorInitializesFieldsCorrectly() {
@@ -35,46 +70,59 @@ class UserTest {
         assertEquals(EMAIL,      user.getEmail());
         assertEquals(CODE,       user.getCode());
 
-        // Lista prestiti vuota all'inizio
+        //  Lista prestiti vuota all'inizio
         assertNotNull(user.getActiveLoans());
         assertTrue(user.getActiveLoans().isEmpty());
     }
 
     // ---------------------------------------------------------------------
-    // getActiveLoans: copia difensiva
+    //                  getActiveLoans: copia difensiva
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che la copia restituita da getActiveLoans() non alteri lo stato interno.
+     * 
+     * Il test controlla sia che due invocazioni successive restituiscano liste distinte,
+     * sia che operazioni sulla lista restituita non impattino la lista interna.
+     */
     @Test
     @DisplayName("getActiveLoans restituisce una copia difensiva della lista interna")
     void getActiveLoansReturnsDefensiveCopy() {
-        // Stato iniziale: lista vuota
+        //  Stato iniziale: lista vuota
         List<Loan> loans1 = user.getActiveLoans();
         List<Loan> loans2 = user.getActiveLoans();
 
-        // Le due liste devono essere istanze diverse
+        //  Le due liste devono essere istanze diverse
         assertNotSame(loans1, loans2);
 
-        // Simuliamo un prestito aggiunto dall'oggetto
-        user.addLoan(null);  // usiamo null come segnaposto
+        //  Simulazione di un prestito aggiunto dall'oggetto
+        user.addLoan(null);  //< utilizzo di null come segnaposto
 
         List<Loan> loans3 = user.getActiveLoans();
         assertEquals(1, loans3.size());
 
-        // Modifico la lista restituita
+        //  Modifica della lista restituita
         loans3.clear();
 
-        // Lo stato interno non deve cambiare
+        //  Lo stato interno non deve cambiare
         assertEquals(1, user.getActiveLoans().size());
     }
 
     // ---------------------------------------------------------------------
-    // setActiveLoans
+    //                      setActiveLoans
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che setActiveLoans(List) gestisca il caso null.
+     * 
+     * Passando null la lista interna deve diventare vuota (non null).
+     * 
+     * @post getActiveLoans() restituisce una lista vuota.
+     */
     @Test
     @DisplayName("setActiveLoans(null) imposta la lista dei prestiti a vuota")
     void setActiveLoansNullSetsEmptyList() {
-        // Pre-carico qualche prestito
+        //  Pre-caricamento di alcuni prestiti
         user.addLoan(null);
         assertFalse(user.getActiveLoans().isEmpty());
 
@@ -84,29 +132,39 @@ class UserTest {
         assertTrue(user.getActiveLoans().isEmpty());
     }
 
+    /**
+     * @brief Verifica che setActiveLoans(List) usi una copia difensiva.
+     *
+     * Modificando la lista passata al setter non si deve alterare lo stato interno.
+     */
     @Test
     @DisplayName("setActiveLoans usa una copia difensiva della lista passata")
     void setActiveLoansUsesDefensiveCopy() {
         List<Loan> givenList = new ArrayList<>();
-        givenList.add(null); // segnaposto
+        givenList.add(null); //<    segnaposto
 
         user.setActiveLoans(givenList);
 
-        // Controllo del contenuto iniziale
+        //  Controllo del contenuto iniziale
         List<Loan> internalList = user.getActiveLoans();
         assertEquals(1, internalList.size());
 
-        // Modifico la lista passata al setter
+        //  Modifico la lista passata al setter
         givenList.clear();
 
-        // Lo stato interno non deve cambiare
+        //  Lo stato interno non deve cambiare
         assertEquals(1, user.getActiveLoans().size());
     }
 
     // ---------------------------------------------------------------------
-    // Setter base (firstName, lastName, email)
+    //                  Setter base (firstName, lastName, email)
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che i setter anagrafici aggiornino correttamente i campi.
+     *
+     * Controlla che la matricola rimanga invariata.
+     */
     @Test
     @DisplayName("I setter delle informazioni anagrafiche aggiornano correttamente i campi")
     void basicSettersUpdateFields() {
@@ -117,20 +175,28 @@ class UserTest {
         assertEquals("Luigi",                       user.getFirstName());
         assertEquals("Bianchi",                     user.getLastName());
         assertEquals("luigi.bianchi@example.com",   user.getEmail());
-        // code resta immutato
+        //  code resta immutato
         assertEquals(CODE, user.getCode());
     }
 
     // ---------------------------------------------------------------------
-    // addLoan / removeLoan / hasActiveLoans
+    //                  addLoan / removeLoan / hasActiveLoans
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che hasActiveLoans() sia false quando non ci sono prestiti.
+     */
     @Test
     @DisplayName("hasActiveLoans è false quando non ci sono prestiti")
     void hasActiveLoansFalseWhenEmpty() {
         assertFalse(user.hasActiveLoans());
     }
 
+    /**
+     * @brief Verifica che dopo l'aggiunta di un prestito con addLoan(Loan) si aggiorni lo stato.
+     *
+     * Dopo l'aggiunta, hasActiveLoans deve diventare true e la dimensione aumentare.
+     */
     @Test
     @DisplayName("addLoan aggiunge un prestito attivo e hasActiveLoans diventa true")
     void addLoanAddsLoanAndHasActiveLoansBecomesTrue() {
@@ -142,6 +208,11 @@ class UserTest {
         assertEquals(1, user.getActiveLoans().size());
     }
 
+    /**
+     * @brief Verifica che removeLoan(Loan) rimuova un prestito presente.
+     *
+     * Dopo la rimozione, la lista deve risultare vuota.
+     */
     @Test
     @DisplayName("removeLoan rimuove un prestito presente")
     void removeLoanRemovesExistingLoan() {
@@ -156,22 +227,28 @@ class UserTest {
         assertFalse(user.hasActiveLoans());
     }
 
+    /**
+     * @brief Verifica che removeLoan(Loan) non alteri lo stato se il prestito non è presente.
+     */
     @Test
     @DisplayName("removeLoan su prestito non presente non altera la lista")
     void removeLoanOnNonExistingLoanKeepsListUnchanged() {
-        // Lista vuota
+        //  Lista vuota
         assertTrue(user.getActiveLoans().isEmpty());
 
         user.removeLoan(null); // non presente
 
-        // Rimane vuota
+        //  Rimane vuota
         assertTrue(user.getActiveLoans().isEmpty());
     }
 
     // ---------------------------------------------------------------------
-    // equals e hashCode
+    //                      equals e hashCode
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica proprietà base di equals: riflessività e gestione di null/tipi diversi.
+     */
     @Test
     @DisplayName("equals è riflessivo, gestisce null e classi diverse")
     void equalsBasicProperties() {
@@ -180,6 +257,13 @@ class UserTest {
         assertNotEquals(user, "stringa");  // tipo diverso
     }
 
+    /**
+     * @brief Verifica che due User con lo stesso code risultino uguali.
+     *
+     * L'uguaglianza è basata sul codice identificativo (matricola).
+     * 
+     * @post hashCode coerente con equals.
+     */
     @Test
     @DisplayName("Due User con lo stesso code sono uguali, anche se altri campi differiscono")
     void equalsSameCodeDifferentOtherFields() {
@@ -190,6 +274,9 @@ class UserTest {
         assertEquals(u1.hashCode(), u2.hashCode());
     }
 
+    /**
+     * @brief Verifica che due User con code diverso non siano uguali.
+     */
     @Test
     @DisplayName("Due User con code diversi NON sono uguali")
     void equalsDifferentCodes() {
@@ -200,9 +287,14 @@ class UserTest {
     }
 
     // ---------------------------------------------------------------------
-    // toString
+    //                      toString
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che toString() includa informazioni principali.
+     *
+     * Controlla presenza di matricola, nome, cognome, email e conteggio prestiti.
+     */
     @Test
     @DisplayName("toString contiene le informazioni principali dell'utente")
     void toStringContainsMainInfo() {
@@ -215,7 +307,7 @@ class UserTest {
         assertTrue(s.contains(LAST_NAME));
         assertTrue(s.contains(EMAIL));
 
-        // Deve contenere il numero di prestiti attivi (1 in questo caso)
+        //  Deve contenere il numero di prestiti attivi (1 in questo caso)
         assertTrue(s.contains("Active Loans"));
         assertTrue(s.contains("1"));
     }
