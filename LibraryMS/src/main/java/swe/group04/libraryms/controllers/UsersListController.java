@@ -33,11 +33,21 @@ import swe.group04.libraryms.service.ServiceLocator;
 import swe.group04.libraryms.service.UserService;
 
 /**
- * @brief Gestisce le operazioni relative alla visualizzazione, creazione,
- *        modifica ed eliminazione degli utenti del sistema della biblioteca.
+ * @file UsersListController.java
+ * @brief Controller responsabile della gestione della lista utenti.
  *
- * Il controller media tra l'interfaccia utente e la logica applicativa
- * per tutte le funzionalità riguardanti la gestione degli utenti.
+ * Questo controller gestisce la schermata che mostra l’elenco degli utenti
+ * registrati alla biblioteca e consente di:
+ *  - visualizzare tutti gli utenti con le relative informazioni principali,
+ *  - ordinare/filtro gli utenti per nome, cognome o stato prestiti,
+ *  - cercare utenti per testo libero (nome, cognome, matricola, ecc.),
+ *  - aprire la finestra di aggiunta di un nuovo utente,
+ *  - aprire la finestra di dettagli/modifica di un utente selezionato,
+ *  - tornare alla schermata principale del sistema.
+ *
+ * La logica di business (ricerca, ordinamenti, vincoli su prestiti, ecc.)
+ * è delegata a UserService e LoanService. Questo controller si occupa
+ * di collegare i dati alla view e reagire agli eventi dell’interfaccia utente.
  */
 public class UsersListController {
 
@@ -53,10 +63,6 @@ public class UsersListController {
     @FXML private TableColumn<User, String> emailClm;
     @FXML private TableColumn<User, Integer> activeLoansClm;
 
-    // ---------------------------------------------------------
-    // SERVICE
-    // ---------------------------------------------------------
-
     /** Acceso tramite ServiceLocator */
     private final UserService userService = ServiceLocator.getUserService();
     private final LoanService loanService = ServiceLocator.getLoanService();
@@ -66,13 +72,17 @@ public class UsersListController {
 
     private String currentFilter = "Mostra tutti";
 
-    /* ============================================================================
-                              INIZIALIZZAZIONE
-    ============================================================================ */
     /**
-     * @brief Inizializza controller e tabella libri.
+     * @brief Inizializza il controller e configura la tabella utenti.
      *
      * Viene chiamato automaticamente da JavaFX dopo il caricamento del FXML.
+     *
+     * Operazioni principali:
+     *  - associazione delle colonne alle proprietà del modello User,
+     *  - calcolo del numero di prestiti attivi per ogni utente,
+     *  - caricamento iniziale della lista utenti tramite refreshTable(),
+     *  - inizializzazione della ChoiceBox di filtro/ordinamento,
+     *  - attivazione della ricerca in tempo reale sul campo userSearchField.
      */
     public void initialize() {
 
@@ -119,10 +129,14 @@ public class UsersListController {
     }
 
 
-    /* ============================================================================
-                               CARICAMENTO + AGGIORNAMENTO DATI
-    ============================================================================ */
-
+    /**
+     * @brief Ricarica la tabella degli utenti con l’ordinamento di default.
+     *
+     * Recupera la lista utenti dal servizio (ordinata per cognome) e la
+     * riversa nella lista osservabile collegata alla table view.
+     *
+     * @post userTable viene popolata con la lista restituita da UserService.
+     */
     private void refreshTable() {
         List<User> users = userService.getUsersSortedByLastName();
 
@@ -136,6 +150,17 @@ public class UsersListController {
         userTable.refresh();
     }
 
+    /**
+     * @brief Applica il filtro di ricerca testuale sugli utenti.
+     *
+     * La logica di filtraggio è delegata a UserService.searchUsers(),
+     * che ritorna gli utenti corrispondenti alla query (nome, cognome, matricola…).
+     *
+     * Se la query è nulla o vuota, viene ripristinata la lista completa
+     * tramite refreshTable().
+     *
+     * @param query Testo inserito dall’utente nel campo di ricerca.
+     */
     private void applySearch(String query) {
         if (query == null || query.isBlank()) {
             refreshTable();
@@ -146,6 +171,21 @@ public class UsersListController {
         observableUsers.setAll(filtered);
     }
 
+    /**
+     * @brief Applica il filtro/ordinamento selezionato nella ChoiceBox.
+     *
+     * Filtri/ordinamenti gestiti:
+     *  - "Ordina per nome"         → ordina la lista attualmente visibile per firstName;
+     *  - "Ordina per cognome"      → richiede al servizio la lista ordinata per lastName;
+     *  - "Solo prestiti attivi"    → mostra solo gli utenti che hanno almeno un prestito attivo;
+     *  - "Solo prestiti non attivi"→ mostra gli utenti che non hanno prestiti attivi;
+     *  - "Mostra tutti" (default)  → ricarica la lista completa ordinata per cognome.
+     *
+     * @param selected Testo della voce selezionata nella ChoiceBox (può essere null).
+     *
+     * @post observableUsers contiene l’elenco degli utenti coerente con il filtro scelto
+     *       e la tabella viene aggiornata.
+     */
     private void applyFilter(String selected) {
 
         if (selected == null) return;
@@ -189,11 +229,21 @@ public class UsersListController {
         userTable.refresh();
     }
 
-        /* ============================================================================
-                                  NAVIGAZIONE
-       ============================================================================ */
 
-
+    /**
+     * @brief Apre la finestra di aggiunta di un nuovo utente.
+     *
+     * Flusso:
+     *  - carica AddUser.fxml e il relativo controller,
+     *  - registra una callback su AddUserController per aggiornare la tabella
+     *    al termine dell’inserimento (onUserAddedCallback),
+     *  - apre una nuova finestra per la compilazione del form.
+     *
+     * In caso di IOException durante il caricamento del FXML, viene mostrato
+     * un messaggio di errore e la schermata corrente rimane invariata.
+     *
+     * @param event Evento di azione generato dal pulsante "Aggiungi utente".
+     */
     @FXML
     public void addUser(ActionEvent event) {
         try {
@@ -214,6 +264,20 @@ public class UsersListController {
         }
     }
 
+    /**
+     * @brief Apre la finestra di dettagli/modifica dell’utente selezionato.
+     *
+     * Flusso:
+     *  - recupera l’utente selezionato nella tabella; se nessuno è selezionato,
+     *    mostra un messaggio di avviso e interrompe l’operazione;
+     *  - carica UserDetails.fxml e il relativo controller;
+     *  - inietta il modello User tramite UserDetailsController.setUser(User);
+     *  - apre una nuova finestra con i dettagli dell’utente;
+     *  - al closing della finestra di dettagli, richiama refreshTable()
+     *    per aggiornare l’elenco con le eventuali modifiche.
+     *
+     * @param event Evento di azione generato dal pulsante "Visualizza dettagli".
+     */
     @FXML
     public void showUserDetails(ActionEvent event) {
         // 1) Recupero l'utente selezionato
@@ -255,6 +319,15 @@ public class UsersListController {
     }
 
 
+    /**
+     * @brief Torna alla schermata principale dell’applicazione.
+     *
+     * Carica la main view (main.fxml) e sostituisce la scena nello Stage corrente.
+     * In caso di errore di caricamento, viene solo stampato lo stack trace
+     * e la schermata corrente resta invariata.
+     *
+     * @param event Evento di azione generato dal pulsante "Torna alla home".
+     */
     @FXML
     private void backHome(ActionEvent event) {
         try {
@@ -274,16 +347,28 @@ public class UsersListController {
     }
 
 
-    /* ============================================================================
-                                   UTILITIES
-       ============================================================================ */
-
+    /**
+     * @brief Mostra un messaggio di errore bloccante all’utente.
+     *
+     * Utilizzato per segnalare problemi di caricamento schermate o altre
+     * operazioni non riuscite nella gestione degli utenti.
+     *
+     * @param msg Testo del messaggio da mostrare.
+     */
     private void showError(String msg) {
         Alert alert = new Alert(AlertType.ERROR);
         alert.setContentText(msg);
         alert.showAndWait();
     }
 
+    /**
+     * @brief Mostra un messaggio di avviso all’utente.
+     *
+     * Utilizzato per condizioni non eccezionali (es. nessun utente selezionato
+     * in tabella quando si richiede la visualizzazione dei dettagli).
+     *
+     * @param msg Testo del messaggio da mostrare.
+     */
     private void showWarning(String msg) {
         Alert alert = new Alert(AlertType.WARNING);
         alert.setContentText(msg);
