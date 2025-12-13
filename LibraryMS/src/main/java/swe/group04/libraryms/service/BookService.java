@@ -28,8 +28,8 @@ import swe.group04.libraryms.models.*;
  */
 public class BookService {
 
-    /** Servizio per l'accesso e la persistenza dell'archivio. */
-    private LibraryArchiveService libraryArchiveService; // Servizio per la persistenza dell'archivio
+    //  Servizio per l'accesso e la persistenza dell'archivio.
+    private LibraryArchiveService libraryArchiveService; //<    Servizio per la persistenza dell'archivio
 
     /**
      * @brief Comparatore case-insensitive per ordinare i libri per titolo.
@@ -94,9 +94,9 @@ public class BookService {
         validateIsbnFormat(book.getIsbn());
         validateIsbnUniquenessOnAdd(book.getIsbn());
 
-        getArchive().addBook(book); // Aggiunge il libro all'archivio
+        getArchive().addBook(book); //< Aggiunge il libro all'archivio
 
-        persistChanges(); // Persistenza delle modifiche
+        persistChanges(); //<   Persistenza delle modifiche
     }
 
     /**
@@ -157,8 +157,8 @@ public class BookService {
             }
         }
 
-        getArchive().removeBook(book); // Rimozione Effettiva
-        persistChanges(); // Persistenza delle modifiche
+        getArchive().removeBook(book); //<  Rimozione Effettiva
+        persistChanges(); //<   Persistenza delle modifiche
     }
 
     /**
@@ -241,7 +241,7 @@ public class BookService {
 
         String normalized = query.trim().toLowerCase(); // Trasforma in lower-case
 
-        // Query vuota: restituisce tutti i libri ordinati
+        //  Query vuota: restituisce tutti i libri ordinati
         if (normalized.isEmpty()) {
             return getBooksSortedByTitle();
         }
@@ -254,13 +254,13 @@ public class BookService {
 
             boolean matches = false;
 
-            // Titolo
+            //  Titolo
             String title = book.getTitle();
             if (title != null && title.toLowerCase().contains(normalized)) {
                 matches = true;
             }
 
-            // Autori
+            //  Autori
             if (!matches && book.getAuthors() != null) {
                 for (String author : book.getAuthors()) {
                     if (author != null && author.toLowerCase().contains(normalized)) {
@@ -270,7 +270,7 @@ public class BookService {
                 }
             }
 
-            // ISBN
+            //  ISBN
             if (!matches) {
                 String isbn = book.getIsbn();
                 if (isbn != null && isbn.toLowerCase().contains(normalized)) {
@@ -293,47 +293,40 @@ public class BookService {
 
     /**
      * @brief Verifica che i campi obbligatori di un libro siano valorizzati.
-     *
-     * @param book Libro da validare.
-     *
-     * @pre  true
-     * @post true
-     *
-     * @throws MandatoryFieldException Se qualche vincolo non è rispettato.
      */
     private void validateBookMandatoryFields(Book book) throws MandatoryFieldException {
         if (book == null) {
             throw new MandatoryFieldException("Il libro non può essere nullo.");
         }
 
-        // Titolo
+        //  Titolo
         if (isNullOrBlank(book.getTitle())) {
             throw new MandatoryFieldException("Il titolo è obbligatorio.");
         }
 
-        // Autori
+        //  Autori
         if (book.getAuthors() == null || book.getAuthors().isEmpty()) {
             throw new MandatoryFieldException("È necessario specificare almeno un autore.");
         }
 
-        // Anno di pubblicazione
+        //  Anno di pubblicazione
         if (book.getReleaseYear() <= 0 || book.getReleaseYear() > Year.now().getValue()) {
             throw new MandatoryFieldException("L'anno di pubblicazione non è valido.");
         }
 
-        // ISBN
+        //  ISBN
         if (isNullOrBlank(book.getIsbn())) {
             throw new MandatoryFieldException("L'ISBN è obbligatorio.");
         }
 
-        // Copie totali
+        //  Copie totali
         if (book.getTotalCopies() <= 0) {
             throw new MandatoryFieldException(
                     "Il numero totale di copie deve essere maggiore di zero."
             );
         }
 
-        // Copie disponibili
+        //  Copie disponibili
         if (book.getAvailableCopies() < 0 ||
                 book.getAvailableCopies() > book.getTotalCopies()) {
             throw new MandatoryFieldException(
@@ -344,17 +337,6 @@ public class BookService {
 
     /**
      * @brief Valida il formato dell'ISBN.
-     *
-     * - ammette cifre, spazi e trattini;
-     * - dopo normalizzazione (rimozione spazi e trattini) deve contenere solo cifre;
-     * - lunghezza delle cifre normalizzate pari a 10 o 13.
-     *
-     * @param isbn ISBN da validare.
-     *
-     * @pre  isbn != null
-     * @post true
-     *
-     * @throws InvalidIsbnException Se il formato non è valido secondo le regole adottate.
      */
     private void validateIsbnFormat(String isbn) throws InvalidIsbnException {
         String normalized = isbn.replace("-", "").replace(" ", "");
@@ -370,13 +352,6 @@ public class BookService {
 
     /**
      * @brief Verifica l'unicità dell'ISBN durante l'inserimento di un nuovo libro.
-     *
-     * @param isbn ISBN da verificare.
-     *
-     * @pre  isbn != null
-     * @post true
-     *
-     * @throws InvalidIsbnException Se esiste già un libro con lo stesso ISBN.
      */
     private void validateIsbnUniquenessOnAdd(String isbn) throws InvalidIsbnException {
         Book existing = getArchive().findBookByIsbn(isbn);
@@ -391,11 +366,6 @@ public class BookService {
     
     /**
      * @brief Persiste le modifiche dell'archivio tramite LibraryArchiveService.
-     *
-     * Converte eventuali IOException in RuntimeException, poiché la persistenza
-     * fallita rappresenta un errore applicativo.
-     *
-     * @throws RuntimeException Se il salvataggio fallisce (wrapping di IOException).
      */
     private void persistChanges() {
         try {
@@ -407,10 +377,6 @@ public class BookService {
 
     /**
      * @brief Verifica se una stringa è nulla o composta solo da spazi.
-     *
-     * @param value Stringa da controllare.
-     *
-     * @return true se value è null o blank, false altrimenti.
      */
     private boolean isNullOrBlank(String value) {
         return value == null || value.trim().isEmpty();
