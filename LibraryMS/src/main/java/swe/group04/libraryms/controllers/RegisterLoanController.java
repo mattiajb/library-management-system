@@ -51,13 +51,13 @@ public class RegisterLoanController {
     @FXML private Button saveLoanButton;
     @FXML private Button cancelButton;
 
-    /** Servizio prestiti: validazione di dominio e registrazione prestiti. */
+    //  Servizio prestiti: validazione di dominio e registrazione prestiti
     private final LoanService loanService = ServiceLocator.getLoanService();
 
-    /** Servizio archivio: accesso ai dati caricati (utenti, libri, prestiti). */
+    //  Servizio archivio: accesso ai dati caricati (utenti, libri, prestiti)
     private final LibraryArchiveService archiveService = ServiceLocator.getArchiveService();
 
-    /** Callback opzionale eseguita dopo una registrazione riuscita (es. refresh lista prestiti). */
+    //  Callback opzionale eseguita dopo una registrazione riuscita (es. refresh lista prestiti)
     private Runnable onLoanRegisteredCallback;
     
     private ObservableList<User> allUsers;
@@ -116,7 +116,7 @@ public class RegisterLoanController {
             }
         });
 
-        // Listener per la ricerca utenti
+        //  Listener per la ricerca utenti
         userSearchField.textProperty().addListener((obs, oldText, newText) -> {
             String filter = (newText == null) ? "" : newText.trim().toLowerCase();
             User selected = userComboBox.getSelectionModel().getSelectedItem();
@@ -124,8 +124,8 @@ public class RegisterLoanController {
             filteredUsers.setPredicate(user -> {
                 if (user == null) return false;
 
-                // Se l'utente è selezionato lo manteniamo sempre visibile,
-                // anche se non matcha più il filtro.
+                //  Se l'utente è selezionato lo manteniamo sempre visibile,
+                //  anche se non matcha più il filtro.
                 if (selected != null && user.equals(selected)) {
                     return true;
                 }
@@ -256,7 +256,7 @@ public class RegisterLoanController {
                 return;
             }
 
-            // Verifico che utente e libro esistano ancora in archivio
+            //  Verifico che utente e libro esistano ancora in archivio
             User user = archive.findUserByCode(selectedUser.getCode());
             if (user == null) {
                 showError("L'utente selezionato non è più presente in archivio.");

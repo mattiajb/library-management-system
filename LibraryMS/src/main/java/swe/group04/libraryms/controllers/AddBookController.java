@@ -37,7 +37,7 @@ public class AddBookController {
     @FXML private TextField isbnField;
     @FXML private TextField totalCopiesField;
 
-    /** Servizio libri ottenuto tramite ServiceLocator */
+    //  Servizio libri ottenuto tramite ServiceLocator
     private final BookService bookService = ServiceLocator.getBookService();
 
     /**
@@ -110,7 +110,7 @@ public class AddBookController {
                 return;
             }
 
-            // Parsing autori (separati da virgola)
+            //  Parsing autori (separati da virgola)
             List<String> authors = Arrays.stream(authorsText.split(",")).map(String::trim).filter(s -> !s.isEmpty()).collect(Collectors.toList());
 
             if (authors.isEmpty()) {

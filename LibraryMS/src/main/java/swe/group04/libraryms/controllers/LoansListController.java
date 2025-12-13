@@ -43,15 +43,15 @@ import swe.group04.libraryms.service.ServiceLocator;
  */
 public class LoansListController {
 
-    // Pulsanti footer
+    //  Pulsanti footer
     @FXML private Button loanDetailsButton;
     @FXML private Button addLoanButton;
     @FXML private Button loanHomeButton;
 
-    // Filtro
+    //  Filtro
     @FXML private ChoiceBox<String> loanFilterChoiceBox;
 
-    // Tabella
+    //  Tabella
     @FXML private TableView<Loan> loanTable;
     @FXML private TableColumn<Loan, String> loanIdColumn;
     @FXML private TableColumn<Loan, String> userColumn;
@@ -60,12 +60,12 @@ public class LoansListController {
     @FXML private TableColumn<Loan, String> dueDateColumn;
     @FXML private TableColumn<Loan, String> statusColumn;
 
-    // Service
+    //  Service
     private final LoanService loanService = ServiceLocator.getLoanService();
 
     private ObservableList<Loan> observableLoans;
 
-    // Tiene traccia dell’ultimo filtro applicato.
+    //  Tiene traccia dell’ultimo filtro applicato.
     private String currentFilter = "Tutti i prestiti";
 
 
@@ -82,7 +82,7 @@ public class LoansListController {
     @FXML
     public void initialize() {
 
-        // Cell value factories
+        //  Cell value factories
         loanIdColumn.setCellValueFactory(cell ->
                 new SimpleStringProperty(String.valueOf(cell.getValue().getLoanId())));
 
@@ -125,13 +125,13 @@ public class LoansListController {
             return new SimpleStringProperty(status);
         });
 
-        // Evidenziazione grafica delle righe con prestito scaduto
+        //  Evidenziazione grafica delle righe con prestito scaduto
         loanTable.setRowFactory(tv -> new TableRow<Loan>() {
             @Override
             protected void updateItem(Loan loan, boolean empty) {
                 super.updateItem(loan, empty);
 
-                // Prima tolgo sempre la classe, per sicurezza
+                //  Prima tolgo sempre la classe, per sicurezza
                 getStyleClass().remove("overdue-row");
 
                 if (!empty && loan != null && isOverdue(loan)) {
@@ -142,15 +142,13 @@ public class LoansListController {
             }
         });
 
-        // Carica dati iniziali
+        //  Carica dati iniziali
         refreshTable();
 
-        // Imposta filtro
+        //  Imposta filtro
         loanFilterChoiceBox.getItems().setAll("Tutti i prestiti", "Prestiti attivi");
         loanFilterChoiceBox.getSelectionModel().select("Tutti i prestiti");
-        loanFilterChoiceBox.getSelectionModel()
-                .selectedItemProperty()
-                .addListener((obs, oldVal, newVal) -> applyFilter(newVal));
+        loanFilterChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> applyFilter(newVal));
     }
 
     /**
@@ -167,7 +165,7 @@ public class LoansListController {
         if (loan == null) {
             return false;
         }
-        // Uso la logica di dominio già presente nel service
+        //  Uso la logica di dominio già presente nel service
         return loan.isActive() && loanService.isLate(loan);
     }
 

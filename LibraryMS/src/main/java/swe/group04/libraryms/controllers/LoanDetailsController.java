@@ -31,7 +31,7 @@ import swe.group04.libraryms.service.ServiceLocator;
  */
 public class LoanDetailsController {
 
-    // CAMPI FORM
+    //  CAMPI FORM
     @FXML private TextField loanIdField;
     @FXML private TextField userCodeField;
     @FXML private TextField userNameField;
@@ -49,7 +49,7 @@ public class LoanDetailsController {
 
     private Loan loan;
 
-    /** Callback opzionale per chiedere al chiamante di fare refresh. */
+    //  Callback opzionale per chiedere al chiamante di fare refresh.
     private Runnable onLoanUpdatedCallback;
 
     /**

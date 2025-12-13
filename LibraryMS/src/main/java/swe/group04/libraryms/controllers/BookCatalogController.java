@@ -43,13 +43,13 @@ public class BookCatalogController {
     @FXML private TableColumn<Book, String> isbnColumn;
     @FXML private TableColumn<Book, Integer> availabilityColumn;
 
-    /** Servizio per operazioni su libri (logica applicativa e accesso ai dati). */
+    //  Servizio per operazioni su libri (logica applicativa e accesso ai dati).
     private final BookService bookService = ServiceLocator.getBookService();
 
-    /** Lista osservabile associata alla TableView; contiene i libri attualmente mostrati. */
+    //  Lista osservabile associata alla TableView; contiene i libri attualmente mostrati.
     private ObservableList<Book> observableBooks;
 
-    /** Criterio di ordinamento corrente selezionato dall'utente nel ChoiceBox. */
+    //  Criterio di ordinamento corrente selezionato dall'utente nel ChoiceBox.
     private String currentSort = "Ordina per titolo";
 
     /**
@@ -89,10 +89,10 @@ public class BookCatalogController {
 
         bookSortChoiceBox.getSelectionModel().select(currentSort);
 
-        /* Listener su ordinamento */
+        //  Listener su ordinamento
         bookSortChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {applySort(newV);});
 
-        /* Listener ricerca in tempo reale */
+        //  Listener ricerca in tempo reale
         searchField.textProperty().addListener((obs, oldVal, newVal) -> {applySearch(newVal);});
     }
 
@@ -102,7 +102,7 @@ public class BookCatalogController {
     private void refreshTable() {
         List<Book> books;
 
-        // Applica lo stesso criterio di ordinamento usato dall’utente
+        //  Applica lo stesso criterio di ordinamento usato dall’utente
         switch (currentSort) {
             case "Ordina per autore" -> books = bookService.getBooksSortedByAuthor();
 
@@ -141,10 +141,10 @@ public class BookCatalogController {
     private void applySort(String selected) {
         if (selected == null) return;
 
-        // Salva la modalità di ordinamento scelta dall’utente
+        //  Salva la modalità di ordinamento scelta dall’utente
         currentSort = selected;
 
-        // Ricarica la tabella applicando l’ordinamento richiesto
+        //  Ricarica la tabella applicando l’ordinamento richiesto
         refreshTable();
     }
 

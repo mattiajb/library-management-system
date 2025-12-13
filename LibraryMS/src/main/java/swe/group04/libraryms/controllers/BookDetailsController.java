@@ -38,11 +38,11 @@ import javafx.scene.control.ButtonType;
 
 public class BookDetailsController {
 
-    // --- SERVICE ---
+    //  --- SERVICE ---
     private final BookService bookService = ServiceLocator.getBookService();
     private final LoanService loanService = ServiceLocator.getLoanService();
 
-    // --- MODEL ---
+    //  --- MODEL ---
     private Book book;
 
     @FXML private Button saveButton;
@@ -153,15 +153,15 @@ public class BookDetailsController {
                 book.setAvailableCopies(oldAvailable + delta);
             }
 
-            // --- Aggiornamento del modello ---
+            //  --- Aggiornamento del modello ---
             book.setTitle(newTitle);
             book.setAuthors(newAuthors);
             book.setReleaseYear(newYear);
 
-            // Persistenza tramite servizio
+            //  Persistenza tramite servizio
             bookService.updateBook(book);
 
-            // Conferma all’utente
+            //  Conferma all’utente
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setHeaderText("Modifiche salvate");
             alert.setContentText("Le informazioni del libro sono state aggiornate correttamente.");
@@ -218,7 +218,7 @@ public class BookDetailsController {
 
         if (book == null) return;
 
-        // 1) Dialog di conferma
+        //  1) Dialog di conferma
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Conferma eliminazione");
         confirm.setHeaderText("Vuoi davvero eliminare questo libro?");
@@ -226,12 +226,12 @@ public class BookDetailsController {
 
         Optional<ButtonType> result = confirm.showAndWait();
 
-        // Se l'utente NON preme OK, annullo l'operazione
+        //  Se l'utente NON preme OK, annullo l'operazione
         if (result.isEmpty() || result.get() != ButtonType.OK) {
             return;
         }
 
-        // 2) Se l'utente ha confermato, procedo con l'eliminazione
+        //  2) Se l'utente ha confermato, procedo con l'eliminazione
         try {
             bookService.removeBook(book);
 

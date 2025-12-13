@@ -63,11 +63,11 @@ public class UsersListController {
     @FXML private TableColumn<User, String> emailClm;
     @FXML private TableColumn<User, Integer> activeLoansClm;
 
-    /** Acceso tramite ServiceLocator */
+    //  Acceso tramite ServiceLocator
     private final UserService userService = ServiceLocator.getUserService();
     private final LoanService loanService = ServiceLocator.getLoanService();
 
-    /** Lista osservabile popolata dai dati del servizio */
+    //  Lista osservabile popolata dai dati del servizio
     private ObservableList<User> observableUsers;
 
     private String currentFilter = "Mostra tutti";
@@ -289,25 +289,25 @@ public class UsersListController {
         }
 
         try {
-            // 2) Carico lo UserDetails.fxml
+            //  2) Carico lo UserDetails.fxml
             FXMLLoader loader = new FXMLLoader(
                     getClass().getResource("/swe/group04/libraryms/view/UserDetails.fxml"));
 
             Parent root = loader.load();
 
-            // 3) Recupero il controller e inietto il modello
+            //  3) Recupero il controller e inietto il modello
             UserDetailsController controller = loader.getController();
             controller.setUser(selected);
 
-            // 4) Apro una nuova finestra
+            //  4) Apro una nuova finestra
             Stage stage = new Stage();
             stage.setTitle("Dettagli utente");
             stage.setScene(new Scene(root));
 
-            // Quando chiudo la finestra → ricarico la tabella
+            //  Quando chiudo la finestra → ricarico la tabella
             stage.setOnHidden(e -> refreshTable());
 
-            // Imposto il proprietario (finestra lista utenti)
+            //  Imposto il proprietario (finestra lista utenti)
             stage.initOwner(((Node) event.getSource()).getScene().getWindow());
 
             stage.show();
@@ -374,6 +374,4 @@ public class UsersListController {
         alert.setContentText(msg);
         alert.showAndWait();
     }
-
-
 }

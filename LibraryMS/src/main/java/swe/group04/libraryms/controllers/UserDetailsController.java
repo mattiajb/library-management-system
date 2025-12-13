@@ -34,10 +34,10 @@ import swe.group04.libraryms.service.UserService;
  */
 public class UserDetailsController {
 
-    /** Servizio utenti ottenuto tramite ServiceLocator. */
+    //  Servizio utenti ottenuto tramite ServiceLocator
     private final UserService userService = ServiceLocator.getUserService();
 
-    /** Utente attualmente visualizzato/modificato nella finestra dettagli. */
+    //  Utente attualmente visualizzato/modificato nella finestra dettagli
     private User user;
 
     @FXML private Button saveButton;
@@ -94,17 +94,17 @@ public class UserDetailsController {
         if (user == null) return;
 
         try {
-            // --- Lettura nuovi valori ---
+            //  --- Lettura nuovi valori ---
             String newFirstName = nameField.getText().trim();
             String newLastName = surnameField.getText().trim();
             String newEmail = emailField.getText().trim();
 
-            // --- Aggiornamento modello ---
+            //  --- Aggiornamento modello ---
             user.setFirstName(newFirstName);
             user.setLastName(newLastName);
             user.setEmail(newEmail);
 
-            // --- Persistenza ---
+            //  --- Persistenza ---
             userService.updateUser(user);
 
             // --- Feedback ---
@@ -150,7 +150,7 @@ public class UserDetailsController {
 
         if (user == null) return;
 
-        // 1) Dialog di conferma
+        //  1) Dialog di conferma
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
         confirm.setTitle("Conferma eliminazione");
         confirm.setHeaderText("Vuoi davvero eliminare questo utente?");
@@ -158,12 +158,12 @@ public class UserDetailsController {
 
         Optional<ButtonType> result = confirm.showAndWait();
 
-        // Se l'utente NON preme OK, annullo l’operazione
+        //  Se l'utente NON preme OK, annullo l’operazione
         if (result.isEmpty() || result.get() != ButtonType.OK) {
             return;
         }
 
-        // 2) Se confermato, procedo con l'eliminazione
+        //  2) Se confermato, procedo con l'eliminazione
         try {
             userService.removeUser(user);
 
