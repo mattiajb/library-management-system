@@ -1,3 +1,15 @@
+/**
+ * @file BookTest.java
+ * @ingroup TestsModels
+ * @brief Suite di test di unità per la classe di dominio Book.
+ *
+ * Verifica:
+ * - corretta inizializzazione dei campi tramite costruttore e coerenza dei getter;
+ * - uso di copie difensive per la lista degli autori;
+ * - corretto funzionamento dei metodi di business relativi alle copie disponibili
+ * - proprietà di equals/hashCode basate sull'ISBN;
+ * - presenza delle informazioni principali nella rappresentazione testuale (toString).
+ */
 package swe.group04.libraryms.models;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -10,26 +22,54 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * @brief Test di unità per Book
+ *
+ * I test riservano particolare attenzione agli invarianti relativi al numero di copie disponibili
+ * e alle copie difensive sulle collezioni.
+ *
+ * @ingroup TestsModels
+ */
 class BookTest {
 
+    //  Titolo utilizzato nei test
     private static final String TITLE = "Clean Code";
-    private static final List<String> AUTHORS =
-            Arrays.asList("Robert C. Martin");
+    
+    //  Lista autori utilizzata nei test
+    private static final List<String> AUTHORS = Arrays.asList("Robert C. Martin");
+    
+    //  Anno di pubblicazione utilizzato nei test
     private static final int RELEASE_YEAR = 2008;
+    
+    //  ISBN utilizzato nei test
     private static final String ISBN = "9780132350884";
+    
+    //  Numero totale di copie utilizzato nei test. */
     private static final int TOTAL_COPIES = 3;
 
+    //  Istanza di Book inizializzata prima di ogni test.
     private Book book;
 
+    /**
+     * @brief Inizializza un oggetto Book valido prima di ogni test.
+     *
+     * @details
+     * Garantisce isolamento tra i test: ogni test opera su un'istanza nuova.
+     */
     @BeforeEach
     void setUp() {
         book = new Book(TITLE, AUTHORS, RELEASE_YEAR, ISBN, TOTAL_COPIES);
     }
 
     // ---------------------------------------------------------------------
-    // Costruttore e getter di base
+    //                      Costruttore e getter di base
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Controlla la coerenza tra valori passati al costruttore e getter.
+     * 
+     * @post Le proprietà di Book coincidono con i valori attesi.
+     */
     @Test
     @DisplayName("Il costruttore inizializza correttamente tutti i campi")
     void constructorInitializesFieldsCorrectly() {
@@ -41,23 +81,33 @@ class BookTest {
         assertEquals(TOTAL_COPIES, book.getAvailableCopies());
     }
 
+    /**
+     * @brief La modifica della lista restituita non deve alterare lo stato interno.
+     * 
+     * @post La lista interna degli autori non cambia se si modifica la copia.
+     */
     @Test
     @DisplayName("getAuthors restituisce una copia difensiva della lista")
     void getAuthorsReturnsDefensiveCopy() {
         List<String> authorsFromBook = book.getAuthors();
 
-        // Modifico la lista restituita
+        //  Modifico la lista restituita
         authorsFromBook.add("Altro Autore");
 
-        // La lista interna non deve cambiare
+        //  La lista interna non deve cambiare
         assertEquals(AUTHORS, book.getAuthors());
         assertNotSame(AUTHORS, book.getAuthors());
     }
 
     // ---------------------------------------------------------------------
-    // Setter e copie difensive
+    //                      Setter e copie difensive
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Dopo setAuthors, modificare la lista passata non deve influire sul Book.
+     * 
+     * @post La lista interna contiene solo gli autori presenti al momento della chiamata.
+     */
     @Test
     @DisplayName("setAuthors sostituisce gli autori usando una copia difensiva")
     void setAuthorsUsesDefensiveCopy() {
@@ -77,6 +127,11 @@ class BookTest {
         assertEquals("Primo Autore", book.getAuthors().get(0));
     }
 
+    /**
+     * @brief Controlla la modifica di titolo e anno di pubblicazione.
+     * 
+     * @post I getter restituiscono i nuovi valori impostati.
+     */
     @Test
     @DisplayName("I setter semplici aggiornano correttamente i campi di base")
     void settersUpdateBasicFields() {
@@ -87,14 +142,20 @@ class BookTest {
         assertEquals(2020, book.getReleaseYear());
     }
 
-    // NOTA: non testiamo qui la violazione volontaria degli invarianti
-    // tramite setTotalCopies/setAvailableCopies, perché sarebbe
-    // comportamento fuori contratto lato client.
+    /**
+     * @note
+     * Non vengono testate qui violazioni volontarie degli invarianti tramite
+     * setTotalCopies/setAvailableCopies poiché rappresentano un uso fuori contratto
+     * da parte del chiamante.
+     */
 
     // ---------------------------------------------------------------------
-    // hasAvailableCopies
+    //                      hasAvailableCopies
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che hasAvailableCopies() sia true se availableCopies > 0.
+     */
     @Test
     @DisplayName("hasAvailableCopies è true quando availableCopies > 0")
     void hasAvailableCopiesTrueWhenGreaterThanZero() {
@@ -102,6 +163,9 @@ class BookTest {
         assertTrue(book.hasAvailableCopies());
     }
 
+    /**
+     * @brief Verifica che hasAvailableCopies() sia false se availableCopies == 0.
+     */
     @Test
     @DisplayName("hasAvailableCopies è false quando availableCopies == 0")
     void hasAvailableCopiesFalseWhenZero() {
@@ -110,9 +174,15 @@ class BookTest {
     }
 
     // ---------------------------------------------------------------------
-    // decrementAvailableCopies
+    //                      decrementAvailableCopies
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che decrementAvailableCopies() decrementi di 1 quando le copie sono disponibili.
+     *
+     * @pre availableCopies > 0
+     * @post availableCopies == availableCopies@pre - 1
+     */
     @Test
     @DisplayName("decrementAvailableCopies diminuisce di 1 se ci sono copie disponibili")
     void decrementAvailableCopiesWhenPositive() {
@@ -121,6 +191,12 @@ class BookTest {
         assertEquals(1, book.getAvailableCopies());
     }
 
+    /**
+     * @brief Verifica che decrementAvailableCopies() lanci eccezione a 0 copie disponibili.
+     *
+     * @pre availableCopies == 0
+     * @post Lo stato rimane invariato.
+     */
     @Test
     @DisplayName("decrementAvailableCopies lancia IllegalStateException se availableCopies == 0")
     void decrementAvailableCopiesThrowsWhenZero() {
@@ -132,45 +208,58 @@ class BookTest {
     }
 
     // ---------------------------------------------------------------------
-    // incrementAvailableCopies
+    //                      incrementAvailableCopies
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica che incrementAvailableCopies() incrementi di 1 se availableCopies < totalCopies.
+     *
+     * @pre availableCopies < totalCopies
+     * @post availableCopies == availableCopies@pre + 1
+     */
     @Test
     @DisplayName("incrementAvailableCopies aumenta di 1 se availableCopies < totalCopies")
     void incrementAvailableCopiesWhenLessThanTotal() {
-        // Caso limite: totalCopies = 3, availableCopies = 2
+        //  Caso limite: totalCopies = 3, availableCopies = 2
         book.setAvailableCopies(TOTAL_COPIES - 1); // 2
         book.incrementAvailableCopies();
         assertEquals(TOTAL_COPIES, book.getAvailableCopies());
     }
 
+    /**
+     * @brief Verifica che incrementAvailableCopies() lanci eccezione se availableCopies == totalCopies.
+     *
+     * @pre availableCopies == totalCopies
+     * @post Lo stato rimane invariato.
+     */
     @Test
     @DisplayName("incrementAvailableCopies lancia IllegalStateException se availableCopies == totalCopies")
     void incrementAvailableCopiesThrowsWhenAtTotal() {
         book.setAvailableCopies(TOTAL_COPIES); // già al massimo
 
         assertThrows(IllegalStateException.class, () -> book.incrementAvailableCopies());
-        // Lo stato rimane invariato
+        //  Lo stato rimane invariato
         assertEquals(TOTAL_COPIES, book.getAvailableCopies());
     }
 
-    // ---------------------------------------------------------------------
-    // Verifica che la sequenza di increment/decrement rispetti gli invarianti
-    // ---------------------------------------------------------------------
-
+    /**
+     * @brief Verifica che una sequenza di operazioni lecite mantenga gli invarianti sulle copie.
+     *
+     * @brief AvailableCopies deve rimanere nel range [0, totalCopies].
+     */
     @Test
     @DisplayName("Sequenza di increment/decrement mantiene availableCopies tra 0 e totalCopies")
     void incrementDecrementSequencePreservesInvariants() {
-        // Stato iniziale: available = totalCopies
+        //  Stato iniziale: available = totalCopies
         assertEquals(TOTAL_COPIES, book.getAvailableCopies());
 
-        // Decremento fino a 0 (uso solo chiamate lecite)
+        //  Decrementare fino a 0, usando solo chiamate lecite
         while (book.getAvailableCopies() > 0) {
             book.decrementAvailableCopies();
         }
         assertEquals(0, book.getAvailableCopies());
 
-        // Incremento fino a totalCopies
+        //  Incrementare fino a totalCopies
         while (book.getAvailableCopies() < book.getTotalCopies()) {
             book.incrementAvailableCopies();
         }
@@ -178,9 +267,12 @@ class BookTest {
     }
 
     // ---------------------------------------------------------------------
-    // equals e hashCode
+    //                      equals e hashCode
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Verifica proprietà base di equals: riflessività e gestione di null/tipi diversi.
+     */
     @Test
     @DisplayName("equals è riflessivo, gestisce null e classi diverse")
     void equalsBasicProperties() {
@@ -189,6 +281,11 @@ class BookTest {
         assertNotEquals(book, "stringa");      // tipo diverso
     }
 
+    /**
+     * @brief Verifica l'uguaglianza tra due Book, con identificativo ISBN identico
+     * 
+     * @post hashCode coerente con equals.
+     */
     @Test
     @DisplayName("Due Book con lo stesso ISBN sono uguali, anche con altri campi diversi")
     void equalsSameIsbnDifferentOtherFields() {
@@ -199,6 +296,9 @@ class BookTest {
         assertEquals(b1.hashCode(), b2.hashCode());
     }
 
+    /**
+     * @brief Verifica la disuguaglianza tra due Book, con identificativi ISBN diversi
+     */
     @Test
     @DisplayName("Due Book con ISBN diverso NON sono uguali")
     void equalsDifferentIsbn() {
@@ -209,9 +309,12 @@ class BookTest {
     }
 
     // ---------------------------------------------------------------------
-    // toString
+    //                      toString
     // ---------------------------------------------------------------------
 
+    /**
+     * @brief Controlla presenza di titolo, ISBN, anno e dati copie.
+     */
     @Test
     @DisplayName("toString contiene le informazioni principali del libro")
     void toStringContainsMainInfo() {
