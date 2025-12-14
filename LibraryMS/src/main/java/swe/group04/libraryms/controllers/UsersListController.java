@@ -1,5 +1,4 @@
 /**
- * @file UserController.java
  * @brief Controller responsabile della gestione delle operazioni sugli utenti.
  */
 package swe.group04.libraryms.controllers;
