@@ -52,7 +52,7 @@ class UserServiceTest {
      */
     private static class InMemoryArchiveFileService extends ArchiveFileService {
         
-        //  Riferimento all'archivio memorizzato (può essere null)
+        ///  Riferimento all'archivio memorizzato (può essere null)
         private LibraryArchive stored;
 
         InMemoryArchiveFileService() {
@@ -66,7 +66,7 @@ class UserServiceTest {
         public void saveArchive(LibraryArchive archive) throws IOException { stored = archive; }
     }
 
-    //  Servizio di archiviazione usato dal UserService
+    ///  Servizio di archiviazione usato dal UserService
     private LibraryArchiveService archiveService;
         
     private UserService userService;

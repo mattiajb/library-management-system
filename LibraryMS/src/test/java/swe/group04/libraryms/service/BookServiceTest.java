@@ -36,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @brief Test di unità per BookService
  *
- * -logica di business relativa ai libri, esercitando i metodi
+ *  I test coprono la logica di business relativa ai libri, esercitando i metodi
  *  esposti da BookService su un archivio isolato dalla persistenza reale.
  * 
  * @ingroup TestsService
@@ -50,7 +50,7 @@ class BookServiceTest {
      */
     private static class InMemoryArchiveFileService extends ArchiveFileService {
         
-        //  Riferimento all'archivio memorizzato (può essere null)
+        ///  Riferimento all'archivio memorizzato (può essere null)
         private LibraryArchive stored;
 
         InMemoryArchiveFileService() {
