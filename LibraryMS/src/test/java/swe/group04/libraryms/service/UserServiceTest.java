@@ -42,6 +42,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * - addUser: validazioni e inserimento;
  * - searchUsers: match testuale sui campi principali;
  * - removeUser: vincolo prestiti attivi.
+ * 
+ * @ingroup TestsService
  */
 class UserServiceTest {
 

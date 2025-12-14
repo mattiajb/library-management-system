@@ -41,6 +41,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * I test coprono:
  * - registerLoan: validazioni, vincoli di business e creazione del prestito;
  * - returnLoan: chiusura del prestito e aggiornamento delle copie disponibili.
+ * 
+ * @ingroup TestsService
  */
 class LoanServiceTest {
 
