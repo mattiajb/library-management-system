@@ -1,0 +1,210 @@
+/* ========= STILE GENERALE APP ========= */
+
+.root {
+    -fx-font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+/* Root pane principale della finestra */
+.root-pane {
+    -fx-background-color: linear-gradient(to bottom, #f7f9fc, #dde5f5);
+}
+
+/* ========= HEADER & FOOTER ========= */
+
+.header-bar {
+    -fx-background-color: #0c345d;
+}
+
+.header-title {
+    -fx-text-fill: white;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+
+.main-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0c345d;
+}
+
+.main-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #7f8c8d;
+}
+
+.footer-bar {
+    -fx-background-color: #ecf0f1;
+}
+
+.status-label {
+    -fx-text-fill: #7f8c8d;
+    -fx-font-size: 11px;
+}
+
+/* ========= PULSANTI ========= */
+
+/* Pulsanti principali (es. dalla home: Catalogo, Utenti, Prestiti) */
+.main-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20;
+    -fx-padding: 10 30;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 5, 0.3, 0, 1);
+}
+
+.main-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.main-button:pressed {
+    -fx-background-color: #1f5e85;
+}
+
+/* Pulsante Esci */
+.exit-button {
+    -fx-background-color: #bdc3c7;
+    -fx-text-fill: #2c3e50;
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-background-radius: 16;
+    -fx-padding: 6 16;
+    -fx-cursor: hand;
+}
+
+.exit-button:hover {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+}
+
+.exit-button:pressed {
+    -fx-background-color: #c0392b;
+}
+
+/* Pulsanti standard nelle altre view (aggiungi, modifica, elimina, salva, annulla) */
+.action-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-background-radius: 16;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+}
+
+.action-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.action-button:pressed {
+    -fx-background-color: #1f5e85;
+}
+
+.secondary-button {
+    -fx-background-color: #bdc3c7;
+    -fx-text-fill: #2c3e50;
+    -fx-font-size: 12px;
+    -fx-background-radius: 16;
+    -fx-padding: 6 14;
+    -fx-cursor: hand;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #95a5a6;
+    -fx-text-fill: white;
+}
+
+/* ========= TABLEVIEW (cataloghi, liste utenti/prestiti) ========= */
+
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-selection-bar: #90caf9;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #ecf0f1;
+}
+
+.table-view .column-header,
+.table-view .filler {
+    -fx-size: 32px;
+    -fx-border-color: #d0d7de;
+    -fx-border-width: 0 0 1 1;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell:filled:selected {
+    -fx-background-color: #d6eaf8;
+}
+
+.table-row-cell:filled:hover {
+    -fx-background-color: #f2f9ff;
+}
+
+/* Riga evidenziata (es. prestito in ritardo) */
+.row-late {
+    -fx-background-color: #fdecea;
+}
+
+/* ========= FORM (campi testo, choicebox, ecc.) ========= */
+
+.text-field,
+.password-field,
+.text-area {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: #bdc3c7;
+    -fx-padding: 4 8;
+}
+
+.text-field:focused,
+.password-field:focused,
+.text-area:focused {
+    -fx-border-color: #3498db;
+    -fx-border-width: 1.2;
+}
+
+.choice-box,
+.combo-box,
+.date-picker {
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: #bdc3c7;
+}
+
+.choice-box:focused,
+.combo-box:focused,
+.date-picker:focused {
+    -fx-border-color: #3498db;
+}
+
+/* Etichette form */
+.form-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #34495e;
+}
+
+/* Sezioni / pannelli */
+.section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+}
+
+/* ================================
+   LOANS LIST - OVERDUE ROW STYLE
+   ================================ */
+
+/* Riga di prestito scaduto */
+.table-row-cell.overdue-row {
+    -fx-background-color: #ffe6e6; /* rosa chiaro di warning */
+}
+
+/* Riga scaduta selezionata (più intensa) */
+.table-row-cell.overdue-row:selected {
+    -fx-background-color: #ffb3b3;
+}

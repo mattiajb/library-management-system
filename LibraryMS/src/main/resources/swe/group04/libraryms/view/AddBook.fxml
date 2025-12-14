@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="400.0" prefWidth="650.0" styleClass="root-pane" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.AddBookController">
+
+    <!-- HEADER -->
+    <top>
+        <VBox spacing="5" BorderPane.alignment="CENTER_LEFT">
+            <padding>
+                <Insets bottom="8" left="20" right="20" top="12" />
+            </padding>
+            <children>
+                <Label styleClass="section-title" text="Aggiungi nuovo libro" />
+
+                <Label styleClass="main-subtitle" text="Inserisci i dati necessari per aggiungere un libro al catalogo" />
+
+                <Separator />
+            </children>
+        </VBox>
+    </top>
+
+    <!-- CONTENUTO CENTRALE: FORM -->
+    <center>
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="10" left="20" right="20" top="10" />
+            </padding>
+            <children>
+
+                <GridPane hgap="12" vgap="10">
+                    <children>
+                        <!-- Titolo -->
+                        <Label styleClass="form-label" text="Titolo:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+
+                        <TextField fx:id="titleField" prefHeight="25.0" prefWidth="250.0" promptText="Titolo del libro" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                        <!-- Autore -->
+                        <Label styleClass="form-label" text="Autore:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+
+                        <TextField fx:id="authorField" promptText="Autore" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <!-- Anno di pubblicazione -->
+                        <Label styleClass="form-label" text="Anno di pubblicazione:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+
+                        <TextField fx:id="yearField" promptText="Es. 2024" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                        <!-- ISBN -->
+                        <Label styleClass="form-label" text="ISBN:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+
+                        <TextField fx:id="isbnField" promptText="Codice ISBN" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                        <!-- Copie totali -->
+                        <Label styleClass="form-label" text="Copie totali:" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+
+                        <TextField fx:id="totalCopiesField" promptText="Numero di copie totali" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                    </children>
+               <columnConstraints>
+                  <ColumnConstraints />
+                  <ColumnConstraints />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+
+            </children>
+        </VBox>
+    </center>
+
+    <!-- FOOTER: AZIONI -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="footer-bar" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="8" left="20" right="20" top="8" />
+            </padding>
+            <children>
+                <!-- Conferma aggiunta del libro -->
+                <Button fx:id="saveButton" onAction="#saveBook" styleClass="action-button" text="Conferma" />
+
+                <!-- Annulla e torna al catalogo -->
+                <Button fx:id="cancelButton" onAction="#cancelOperation" styleClass="secondary-button" text="Annulla" />
+            </children>
+        </HBox>
+    </bottom>
+
+</BorderPane>

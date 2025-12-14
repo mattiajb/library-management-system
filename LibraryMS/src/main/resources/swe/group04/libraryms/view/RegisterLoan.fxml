@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="400.0"
+            prefWidth="650.0"
+            styleClass="root-pane"
+            xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            stylesheets="/swe/group04/libraryms/css/style.css"
+            fx:controller="swe.group04.libraryms.controllers.RegisterLoanController">
+
+    <!-- HEADER -->
+    <top>
+        <VBox spacing="5" BorderPane.alignment="CENTER_LEFT">
+            <padding>
+                <Insets bottom="8" left="20" right="20" top="12" />
+            </padding>
+            <children>
+                <Label styleClass="section-title"
+                       text="Registra nuovo prestito" />
+
+                <Label styleClass="main-subtitle"
+                       text="Inserisci i dati necessari per registrare un prestito" />
+
+                <Separator />
+            </children>
+        </VBox>
+    </top>
+
+    <!-- CONTENUTO CENTRALE: FORM -->
+    <center>
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="10" left="20" right="20" top="10" />
+            </padding>
+            <children>
+
+                <GridPane hgap="12" vgap="10">
+                    <children>
+
+                        <!-- UTENTE: label + search field sulla stessa riga -->
+                        <Label styleClass="form-label"
+                               text="Utente:"
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="0" />
+
+                        <TextField fx:id="userSearchField"
+                                   prefWidth="380.0"
+                                   promptText="Cerca per matricola, nome o cognome... 🔍"
+                                   GridPane.columnIndex="1"
+                                   GridPane.rowIndex="0" />
+
+                        <!-- Combo utente sotto la ricerca -->
+                        <Label text=""
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="1" />
+
+                        <ComboBox fx:id="userComboBox"
+                                  prefWidth="380.0"
+                                  promptText="Seleziona utente (Matricola → Nome Cognome)"
+                                  focusTraversable="false"
+                                  GridPane.columnIndex="1"
+                                  GridPane.rowIndex="1" />
+
+                        <!-- LIBRO: label + search field sulla stessa riga -->
+                        <Label styleClass="form-label"
+                               text="Libro:"
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="2" />
+
+                        <TextField fx:id="bookSearchField"
+                                   prefWidth="380.0"
+                                   promptText="Cerca per ISBN o titolo... 🔍"
+                                   GridPane.columnIndex="1"
+                                   GridPane.rowIndex="2" />
+
+                        <!-- Combo libro sotto la ricerca -->
+                        <Label text=""
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="3" />
+
+                        <ComboBox fx:id="bookComboBox"
+                                  prefWidth="380.0"
+                                  promptText="Seleziona libro (ISBN → Titolo)"
+                                  focusTraversable="false"
+                                  GridPane.columnIndex="1"
+                                  GridPane.rowIndex="3" />
+
+                        <!-- DATA RESTITUZIONE -->
+                        <Label styleClass="form-label"
+                               text="Data restituzione prevista:"
+                               GridPane.columnIndex="0"
+                               GridPane.rowIndex="4" />
+
+                        <DatePicker fx:id="dueDatePicker"
+                                    promptText="gg/mm/aaaa"
+                                    focusTraversable="false"
+                                    GridPane.columnIndex="1"
+                                    GridPane.rowIndex="4" />
+
+                    </children>
+
+                    <columnConstraints>
+                        <ColumnConstraints />
+                        <ColumnConstraints />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                        <RowConstraints />
+                    </rowConstraints>
+                </GridPane>
+
+            </children>
+        </VBox>
+    </center>
+
+    <!-- FOOTER: AZIONI -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT"
+              spacing="10"
+              styleClass="footer-bar"
+              BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="8" left="20" right="20" top="8" />
+            </padding>
+            <children>
+
+                <!-- Conferma registrazione prestito -->
+                <Button fx:id="saveLoanButton"
+                        styleClass="action-button"
+                        text="Conferma"
+                        onAction="#confirmLoan" />
+
+                <!-- Annulla e chiudi finestra -->
+                <Button fx:id="cancelButton"
+                        styleClass="secondary-button"
+                        text="Annulla"
+                        onAction="#cancelOperation" />
+
+            </children>
+        </HBox>
+    </bottom>
+
+</BorderPane>

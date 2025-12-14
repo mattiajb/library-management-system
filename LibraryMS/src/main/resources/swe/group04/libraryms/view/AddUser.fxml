@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="400.0" prefWidth="650.0" styleClass="root-pane" stylesheets="/swe/group04/libraryms/css/style.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="swe.group04.libraryms.controllers.AddUserController">
+
+    <!-- HEADER -->
+    <top>
+        <VBox spacing="5" BorderPane.alignment="CENTER_LEFT">
+            <padding>
+                <Insets bottom="8" left="20" right="20" top="12" />
+            </padding>
+            <children>
+                <Label styleClass="section-title" text="Aggiungi nuovo utente" />
+
+                <Label styleClass="main-subtitle" text="Inserisci i dati necessari per registrare un nuovo utente" />
+
+                <Separator />
+            </children>
+        </VBox>
+    </top>
+
+    <!-- CONTENUTO CENTRALE: FORM -->
+    <center>
+        <VBox spacing="10">
+            <padding>
+                <Insets bottom="10" left="20" right="20" top="10" />
+            </padding>
+            <children>
+
+                <GridPane hgap="12" vgap="10">
+                    <children>
+
+                        <!-- Matricola / ID -->
+                        <Label styleClass="form-label" text="Matricola:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+
+                        <TextField fx:id="codeField" prefHeight="25.0" prefWidth="250.0" promptText="ID / matricola utente" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                        <!-- Nome -->
+                        <Label styleClass="form-label" text="Nome:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+
+                        <TextField fx:id="nameField" promptText="Nome" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <!-- Cognome -->
+                        <Label styleClass="form-label" text="Cognome:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+
+                        <TextField fx:id="surnameField" promptText="Cognome" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                        <!-- Email -->
+                        <Label styleClass="form-label" text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+
+                        <TextField fx:id="emailField" promptText="Email" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                    </children>
+               <columnConstraints>
+                  <ColumnConstraints />
+                  <ColumnConstraints />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+                  <RowConstraints />
+               </rowConstraints>
+                </GridPane>
+
+            </children>
+        </VBox>
+    </center>
+
+    <!-- FOOTER: AZIONI -->
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10" styleClass="footer-bar" BorderPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="8" left="20" right="20" top="8" />
+            </padding>
+            <children>
+                <!-- Conferma aggiunta utente -->
+                <Button fx:id="saveButton" onAction="#saveUser" styleClass="action-button" text="Conferma" />
+
+                <!-- Annulla e chiudi finestra -->
+                <Button fx:id="cancelButton" onAction="#cancelOperation" styleClass="secondary-button" text="Annulla" />
+            </children>
+        </HBox>
+    </bottom>
+
+</BorderPane>
