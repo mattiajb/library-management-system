@@ -79,7 +79,7 @@ class BookServiceTest {
         return new Book(title, authors, year, isbn, totalCopies);
     }
 
-     /**
+    /**
      * @brief Inizializza il contesto di test prima di ogni caso di prova.
      *
      * Prepara un LibraryArchiveService che usa un ArchiveFileService fittizio in-memory,
@@ -183,7 +183,7 @@ class BookServiceTest {
         assertThrows(InvalidIsbnException.class, () -> bookService.addBook(b));
     }
 
-      /**
+    /**
      * @brief Verifica che addBook lanci InvalidIsbnException se si tenta di inserire un ISBN già presente.
      *
      * L'inserimento del primo libro è ok; l'inserimento di un secondo libro con stesso ISBN deve fallire.
@@ -215,15 +215,15 @@ class BookServiceTest {
     }
 
     /**
-    * @brief Verifica che updateBook lanci MandatoryFieldException quando book è null.
-    */
+     * @brief Verifica che updateBook lanci MandatoryFieldException quando book è null.
+     */
     @Test
     @DisplayName("updateBook: null -> MandatoryFieldException")
     void updateBookNullThrows() {
         assertThrows(MandatoryFieldException.class, () -> bookService.updateBook(null));
     }
 
-     /**
+    /**
      * @brief Verifica che updateBook lanci InvalidIsbnException con ISBN non valido.
      */
     @Test
@@ -247,10 +247,10 @@ class BookServiceTest {
     }
 
     /**
-    * @brief Verifica che removeBook rimuova un libro se non esistono prestiti attivi associati.
-    *
-    * Inserisce un libro, lo rimuove e verifica che l'archivio sia vuoto.
-    */
+     * @brief Verifica che removeBook rimuova un libro se non esistono prestiti attivi associati.
+     *
+     * Inserisce un libro, lo rimuove e verifica che l'archivio sia vuoto.
+     */
     @Test
     @DisplayName("removeBook: rimuove se non ci sono prestiti attivi")
     void removeBookRemovesWhenNoActiveLoans() throws Exception {
@@ -262,10 +262,10 @@ class BookServiceTest {
     }
 
     /**
-    * @brief Verifica che removeBook lanci UserHasActiveLoanException se esistono prestiti attivi associati al libro.
-    *
-    * Crea un prestito attivo nell'archivio per lo stesso libro e verifica che la rimozione fallisca.
-    */
+     * @brief Verifica che removeBook lanci UserHasActiveLoanException se esistono prestiti attivi associati al libro.
+     *
+     * Crea un prestito attivo nell'archivio per lo stesso libro e verifica che la rimozione fallisca.
+     */
     @Test
     @DisplayName("removeBook: se ci sono prestiti attivi associati -> UserHasActiveLoanException")
     void removeBookThrowsIfHasActiveLoans() throws Exception {
@@ -284,10 +284,10 @@ class BookServiceTest {
     }
 
     /* ======================================================
-                    searchBooks (Soluzione A)
+                            searchBooks
        ====================================================== */
 
-     /**
+    /**
      * @brief Verifica che searchBooks trovi corrispondenze su titolo, autore e ISBN.
      *
      * Inserisce due libri e verifica:
