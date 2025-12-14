@@ -43,7 +43,7 @@
                         <!-- Titolo -->
                         <Label styleClass="form-label" text="Titolo:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
 
-                        <TextField fx:id="titleField" promptText="Titolo del libro" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                        <TextField fx:id="titleField" prefHeight="25.0" prefWidth="250.0" promptText="Titolo del libro" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                         <!-- Autore -->
                         <Label styleClass="form-label" text="Autore:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
@@ -90,7 +90,7 @@
             </padding>
             <children>
                 <!-- Conferma aggiunta del libro -->
-                <Button fx:id="saveButton" styleClass="action-button" text="Conferma" onAction="#saveBook" />
+                <Button fx:id="saveButton" onAction="#saveBook" styleClass="action-button" text="Conferma" />
 
                 <!-- Annulla e torna al catalogo -->
                 <Button fx:id="cancelButton" onAction="#cancelOperation" styleClass="secondary-button" text="Annulla" />
