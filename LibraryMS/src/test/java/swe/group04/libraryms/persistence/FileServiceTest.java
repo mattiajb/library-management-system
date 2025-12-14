@@ -1,3 +1,13 @@
+/**
+ * @file FileServiceTest.java
+ * @ingroup TestsPersistence
+ * @brief Suite di test di unità per la classe FileService.
+ *
+ * Verifica:
+ * - la corretta scrittura e lettura di oggetti semplici serializzabili (String);
+ * - la corretta gestione di collezioni serializzabili (List);
+ * - il corretto sollevamento di eccezioni in caso di lettura da file inesistenti.
+ */
 package swe.group04.libraryms.persistence;
 
 import org.junit.jupiter.api.AfterEach;
@@ -11,36 +21,45 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @file FileServiceTest.java
- * @brief Test di unità per la classe FileService.
- *
- * I test verificano il corretto funzionamento delle operazioni di
- * scrittura e lettura di oggetti serializzabili su file.
+ * @brief Suite di test per FileService.
+ * 
+ * I test operano su file temporanei creati durante l'esecuzione e
+ * rimossi al termine di ciascun caso di prova.
+ * 
+ * @ingroup TestsPersistence
  */
 class FileServiceTest {
 
     private FileService fileService;
 
+    //  Percorso del file di test utilizzato nei casi di prova
     private String testFilePath;
 
     /**
-     * @brief Inizializza il servizio e il percorso del file di test.
+     * @brief Inizializza il servizio e prepara il file di test.
+     *
+     * Prima di ogni test viene istanziato un nuovo FileService
+     * e viene garantita la rimozione di eventuali file residui
+     * da esecuzioni precedenti.
      */
     @BeforeEach
     void setUp() {
         fileService = new FileService();
         testFilePath = "fileServiceTest.bin";
 
-        // pulizia preventiva se il file esiste già
+        //  pulizia preventiva se il file esiste già
         File f = new File(testFilePath);
         if (f.exists()) {
-            // ignoriamo l'esito, è solo best effort
+            //  ignoriamo l'esito, è solo best effort
             f.delete();
         }
     }
 
     /**
-     * @brief Elimina il file di test alla fine di ogni esecuzione.
+     * @brief Rimuove il file di test al termine di ogni esecuzione.
+     *
+     * Garantisce che i test siano indipendenti tra loro e
+     * non lascino effetti collaterali sul file system.
      */
     @AfterEach
     void tearDown() {
@@ -51,10 +70,11 @@ class FileServiceTest {
     }
 
     /**
-     * @brief Verifica che scrittura e lettura funzionino con una semplice stringa.
+     * @brief Verifica la persistenza di una stringa tramite serializzazione.
      *
-     * Il test scrive una stringa su file e poi la rilegge, controllando che
-     * il valore letto coincida con quello originale.
+     * Il test scrive una stringa su file e la rilegge,
+     * controllando che l'oggetto deserializzato coincida
+     * con quello originale.
      */
     @Test
     void writeAndRead_shouldPersistStringValue() throws IOException {
@@ -69,10 +89,11 @@ class FileServiceTest {
     }
 
     /**
-     * @brief Verifica che scrittura e lettura funzionino con una lista serializzabile.
+     * @brief Verifica la persistenza di una collezione serializzabile.
      *
-     * Il test usa una List<String>, che è serializzabile, per verificare
-     * la correttezza della serializzazione/deserializzazione.
+     * Il test utilizza una List<String>, verificando che
+     * la serializzazione e deserializzazione mantengano
+     * correttamente il contenuto della collezione.
      */
     @Test
     void writeAndRead_shouldPersistSerializableCollection() throws IOException {
@@ -87,7 +108,11 @@ class FileServiceTest {
     }
 
     /**
-     * @brief Verifica che la lettura da un file inesistente causi un'eccezione di I/O.
+     * @brief Verifica che la lettura da un file inesistente generi un errore.
+     *
+     * Il test controlla che FileService sollevi un'eccezione
+     * di tipo IOException quando si tenta di leggere
+     * da un file che non esiste.
      */
     @Test
     void readFromFile_nonExistingFile_shouldThrowIOException() {
