@@ -187,16 +187,28 @@ git clone https://github.com/mattiajb/library-management-system.git
 cd <your-repo>
 ```
 
-### 2️⃣ Build
+### 2️⃣ Run with Maven
 ```bash
-mvn clean package
+mvn clean install
+mvn javafx:run
 ```
-
-### 3️⃣ Run (via Maven JavaFX plugin)
-```bash
-mvn clean javafx:run
+On first launch, the application will create (if it does not already exist) the archive file:
+```text
+library-archive.dat
 ```
+in the project root directory.
 
+### ▶️ Using a pre-populated DEMO archive
+1) Go to the folder:
+```text
+archiveDemo/
+```
+2) Copy the file:
+```text
+archiveDemo/library-archive.dat
+```
+3) Paste it into the LibraryMS project root (the same folder where pom.xml is located), overwriting any existing library-archive.dat.
+4) Start the application.
 ---
 
 # 🐺 Team Members
